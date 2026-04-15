@@ -114,6 +114,11 @@ select.inp option{background:var(--dark3);color:var(--tp)}
 .mt{font-size:15px;font-weight:600;color:var(--gold);margin-bottom:14px}
 .hidden{display:none!important}
 .badge{background:var(--gold);color:#1A1A1A;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:600;margin-left:4px}
+.accord-wrap{background:var(--dark2);border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.accord-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;font-size:13px;font-weight:500;color:var(--tp);transition:background .15s}
+.accord-hdr:hover{background:var(--dark3)}
+.accord-arrow{font-size:11px;color:var(--ts)}
+.accord-body{padding:12px 14px;border-top:1px solid var(--bdr)}
 .kpi-card{background:var(--dark2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px;text-align:center}
 .kpi-val{font-size:22px;font-weight:600;color:var(--gold)}
 .kpi-lbl{font-size:11px;color:var(--tm);margin-top:3px}
@@ -206,6 +211,58 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
           <button class="sp-btn" onclick="spNow()">現在時刻</button>
           <button class="sp-btn-gold" onclick="spCalc()">再計算</button>
         </div>
+
+        <!-- 追加条件 -->
+        <div style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:11px;font-weight:500;color:var(--ts);letter-spacing:.4px">追加条件</span>
+            <button onclick="spResetFilter()" style="background:none;border:none;color:var(--tm);font-size:11px;cursor:pointer;padding:0">リセット</button>
+          </div>
+          <!-- エリア（常時表示） -->
+          <div style="margin-bottom:6px">
+            <div style="font-size:10px;color:var(--tm);margin-bottom:3px">エリア</div>
+            <div class="seg-wrap seg-sm" id="spf-area" style="margin-bottom:0;gap:5px"></div>
+          </div>
+          <!-- 詳細条件（トグル） -->
+          <div>
+            <button onclick="toggleSpDetail()" id="spDetailToggle" style="background:none;border:none;color:var(--ts);font-size:11px;cursor:pointer;padding:0;display:flex;align-items:center;gap:4px">
+              <span id="spDetailArrow">▶</span> 詳細条件
+            </button>
+            <div id="spDetail" class="hidden" style="margin-top:7px">
+              <!-- 顔タイプ -->
+              <div style="margin-bottom:5px">
+                <div style="font-size:10px;color:var(--tm);margin-bottom:3px">顔タイプ</div>
+                <div class="seg-wrap seg-sm" id="spf-face" style="margin-bottom:0;gap:5px">
+                  <button class="seg-btn" data-val="かわいい" onclick="spToggleFilter('face','かわいい',this)">かわいい</button>
+                  <button class="seg-btn" data-val="きれい" onclick="spToggleFilter('face','きれい',this)">きれい</button>
+                  <button class="seg-btn" data-val="ギャル" onclick="spToggleFilter('face','ギャル',this)">ギャル</button>
+                  <button class="seg-btn" data-val="清楚" onclick="spToggleFilter('face','清楚',this)">清楚</button>
+                </div>
+              </div>
+              <!-- スタイル -->
+              <div style="margin-bottom:5px">
+                <div style="font-size:10px;color:var(--tm);margin-bottom:3px">スタイル</div>
+                <div class="seg-wrap seg-sm" id="spf-body" style="margin-bottom:0;gap:5px">
+                  <button class="seg-btn" data-val="ぽっちゃり" onclick="spToggleFilter('body','ぽっちゃり',this)">ぽっちゃり</button>
+                  <button class="seg-btn" data-val="普通" onclick="spToggleFilter('body','普通',this)">普通</button>
+                  <button class="seg-btn" data-val="スレンダー" onclick="spToggleFilter('body','スレンダー',this)">スレンダー</button>
+                </div>
+              </div>
+              <!-- 寛容度 -->
+              <div>
+                <div style="font-size:10px;color:var(--tm);margin-bottom:3px">寛容度</div>
+                <div class="seg-wrap seg-sm" id="spf-kan" style="margin-bottom:0;gap:5px">
+                  <button class="seg-btn" data-val="◎" onclick="spToggleFilter('kan','◎',this)">◎</button>
+                  <button class="seg-btn" data-val="〇" onclick="spToggleFilter('kan','〇',this)">〇</button>
+                  <button class="seg-btn" data-val="ー" onclick="spToggleFilter('kan','ー',this)">ー</button>
+                  <button class="seg-btn" data-val="▲" onclick="spToggleFilter('kan','▲',this)">▲</button>
+                  <button class="seg-btn" data-val="×" onclick="spToggleFilter('kan','×',this)">×</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <table class="sp-tbl">
           <thead>
             <tr><th>セラピスト</th><th>最短開始</th><th>最大コース</th></tr>
@@ -215,7 +272,10 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
           </tbody>
         </table>
         <div class="sp-sns-wrap">
-          <div class="sp-sns-lbl">SNS用テキスト</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+            <div class="sp-sns-lbl" style="margin-bottom:0">SNS用テキスト</div>
+            <button onclick="openSoldModal()" style="background:none;border:1px solid var(--bdr);color:var(--ts);padding:3px 10px;border-radius:var(--r);font-size:11px;cursor:pointer">完売設定</button>
+          </div>
           <div class="sp-sns" id="spSns">—</div>
           <button class="sp-copy" onclick="spCopy()">コピー</button>
         </div>
@@ -355,11 +415,39 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
 
   <!-- 店舗設定 -->
     <div class="page hidden" id="page-storeSetting">
-      <div class="rb" style="margin-bottom:14px">
-        <span class="sec" style="margin:0">エリア管理</span>
-        <button class="btn btn-g btn-sm" onclick="openM('newArea')">＋ 追加</button>
+
+      <!-- エリア管理 アコーディオン -->
+      <div class="accord-wrap">
+        <div class="accord-hdr" onclick="toggleAccord('accord-area')">
+          <span>エリア管理</span>
+          <div class="row" style="gap:8px">
+            <button class="btn btn-g btn-sm" onclick="event.stopPropagation();openM('newArea')">＋</button>
+            <span class="accord-arrow" id="accord-area-arrow">▶</span>
+          </div>
+        </div>
+        <div class="accord-body hidden" id="accord-area">
+          <div id="areaList"></div>
+        </div>
       </div>
-      <div id="areaList"></div>
+
+      <!-- SNSフォーマット アコーディオン -->
+      <div class="accord-wrap">
+        <div class="accord-hdr" onclick="toggleAccord('accord-sns')">
+          <span>SNSテキスト設定</span>
+          <span class="accord-arrow" id="accord-sns-arrow">▶</span>
+        </div>
+        <div class="accord-body hidden" id="accord-sns">
+          <label class="lbl">ヘッダー</label>
+          <textarea class="inp" id="sns-header" rows="3" placeholder="例: 本日の空き情報🌸" style="resize:none"></textarea>
+          <label class="lbl">フッター</label>
+          <textarea class="inp" id="sns-footer" rows="3" placeholder="例: ご予約はDMまで💌" style="resize:none"></textarea>
+          <label class="lbl">完売マーク（セラピスト名の後に表示）</label>
+          <input class="inp" id="sns-sold" placeholder="例: 　完🎉">
+          <button class="btn btn-g btn-sm" style="width:100%;margin-top:4px" onclick="saveSnsFormat()">保存</button>
+          <div id="sns-save-msg" style="font-size:12px;color:var(--gold);text-align:center;margin-top:6px;min-height:16px"></div>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -400,6 +488,16 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
     <div class="row" style="justify-content:flex-end;gap:8px">
       <button class="btn btn-o" onclick="closeM()">キャンセル</button>
       <button class="btn btn-g" onclick="saveAtt()">登録</button>
+    </div>
+  </div>
+
+  <!-- 完売設定 -->
+  <div class="modal hidden" id="m-sold">
+    <div class="mt">完売設定</div>
+    <div style="font-size:12px;color:var(--ts);margin-bottom:10px">タップで完売/受付中を切り替え</div>
+    <div id="soldList"></div>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px">
+      <button class="btn btn-o" onclick="closeM()">閉じる</button>
     </div>
   </div>
 
@@ -593,6 +691,7 @@ function renderAll(){
 }
 
 function renderDash(){
+  buildAreaFilterBtns();
   const d=new Date();
   document.getElementById('dashDate').textContent=
     `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`;
@@ -619,9 +718,117 @@ function tsToMins(ts){
   return parseInt(parts[0])*60+parseInt(parts[1]);
 }
 
+// ── SHORTEST FILTER ──
+const spFilter = {area:null, face:null, body:null, kan:null};
+
+function spToggleFilter(key, val, el){
+  if(spFilter[key]===val){
+    // 同じ値をタップ → 解除
+    spFilter[key]=null;
+    el.classList.remove('active');
+  } else {
+    // 別の値 → 同グループの全ボタンのactiveを外して自分だけON
+    const wrap=document.getElementById('spf-'+key);
+    if(wrap) wrap.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
+    spFilter[key]=val;
+    el.classList.add('active');
+  }
+  spCalc();
+}
+
+function toggleSpDetail(){
+  const detail = document.getElementById('spDetail');
+  const arrow = document.getElementById('spDetailArrow');
+  if(!detail)return;
+  const hidden = detail.classList.contains('hidden');
+  detail.classList.toggle('hidden', !hidden);
+  if(arrow) arrow.textContent = hidden ? '▼' : '▶';
+}
+
+function spResetFilter(){
+  ['area','face','body','kan'].forEach(k=>{
+    spFilter[k]=null;
+    const wrap=document.getElementById('spf-'+k);
+    if(wrap) wrap.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
+  });
+  // 詳細条件を閉じる
+  const detail=document.getElementById('spDetail');
+  const arrow=document.getElementById('spDetailArrow');
+  if(detail) detail.classList.add('hidden');
+  if(arrow) arrow.textContent='▶';
+  spCalc();
+}
+
+// ── SOLD OUT ──
+// {therapistId: true} の形で当日完売セラピストを管理
+let soldOut = {};
+let soldOutDate = '';
+
+function checkSoldOutReset(){
+  const today = getToday();
+  if(soldOutDate && soldOutDate !== today){
+    soldOut={};soldOutDate='';
+  }
+}
+
+function openSoldModal(){
+  checkSoldOutReset();
+  const today = getToday();
+  soldOutDate = today;
+  const att = ld('attendance',[]);
+  const therapists = ld('therapists',[]);
+  // 出勤中のセラピストのみ表示
+  const present = therapists.filter(t=>att.find(a=>a.therapistId===t.id));
+  const fmt = ld('snsFormat',{sold:'　完🎉'});
+  const soldMark = fmt.sold||'　完🎉';
+
+  document.getElementById('soldList').innerHTML = present.length
+    ? present.map(t=>{
+        const isSold = soldOut[t.id]||false;
+        return `<div onclick="toggleThSold(${t.id},this)"
+          style="display:flex;align-items:center;justify-content:space-between;
+          background:${isSold?'#2A1010':'var(--dark3)'};
+          border:1px solid ${isSold?'#C85A5A':'var(--bdr)'};
+          border-radius:var(--r);padding:10px 13px;margin-bottom:7px;cursor:pointer;transition:all .15s">
+          <span style="font-size:14px;font-weight:500;color:${isSold?'#C85A5A':'var(--tp)'}">${t.name}</span>
+          <span style="font-size:13px;color:${isSold?'#C85A5A':'var(--tm)'}">
+            ${isSold?soldMark:'受付中'}
+          </span>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--tm);font-size:13px;text-align:center;padding:10px 0">出勤登録がありません</div>';
+
+  openM('sold');
+}
+
+function toggleThSold(id, el){
+  soldOut[id] = !soldOut[id];
+  const fmt = ld('snsFormat',{sold:'　完🎉'});
+  const soldMark = fmt.sold||'　完🎉';
+  const isSold = soldOut[id];
+  el.style.background = isSold?'#2A1010':'var(--dark3)';
+  el.style.borderColor = isSold?'#C85A5A':'var(--bdr)';
+  el.querySelector('span:first-child').style.color = isSold?'#C85A5A':'var(--tp)';
+  el.querySelector('span:last-child').textContent = isSold?soldMark:'受付中';
+  el.querySelector('span:last-child').style.color = isSold?'#C85A5A':'var(--tm)';
+  spCalc();
+}
+
+function buildAreaFilterBtns(){
+  const areas=ld('areas',[]);
+  const wrap=document.getElementById('spf-area');
+  if(!wrap)return;
+  wrap.innerHTML=areas.map(a=>
+    `<button class="seg-btn" data-val="${a.id}" onclick="spToggleFilter('area',${a.id},this)">${a.name}</button>`
+  ).join('');
+}
+
 function spNow(){
   const mins=nowBusinessMins();
-  document.getElementById('spTime').value=minsToDisplay(mins);
+  // 5分刻みに切り上げ（13:03→13:05、13:00→13:00）
+  const ceiled = Math.ceil(mins/5)*5;
+  document.getElementById('spTime').value=minsToDisplay(ceiled);
+  spCalc();
 }
 
 function parseSpTime(str){
@@ -642,6 +849,12 @@ function computeShortest(baseMins){
   for(const t of therapists){
     const att=attendance.find(a=>a.therapistId===t.id);
     if(!att)continue;
+
+    // 追加条件フィルター（AND）
+    if(spFilter.area!==null && att.areaId!==spFilter.area)continue;
+    if(spFilter.face!==null && t.face!==spFilter.face)continue;
+    if(spFilter.body!==null && t.body!==spFilter.body)continue;
+    if(spFilter.kan!==null && t.kan!==spFilter.kan)continue;
 
     const interval=t.interval||20;
     let bStart=tsToMins(att.start);
@@ -718,13 +931,27 @@ function mxTxt(mx){
 
 function sanName(name){
   if(!name)return 'さん';
-  const s=name.trim();
+  // スペース（半角・全角）で分割して最初のトークンのみ対象
+  const s=name.trim().split(/[\s\u3000]/)[0];
   const isK=c=>{const code=c.charCodeAt(0);return(code>=0x4E00&&code<=0x9FFF)||code===0x3005;};
   const isH=c=>{const code=c.charCodeAt(0);return code>=0x3040&&code<=0x309F;};
-  if(!s.length||!isK(s[0]))return s.split(' ')[0]+'さん';
+  if(!s.length||!isK(s[0]))return s+'さん';
   let last=-1;
   for(let i=0;i<s.length;i++){if(isK(s[i]))last=i;else if(isH(s[i]))break;}
-  return(last>=0?s.slice(0,last+1):s.split(' ')[0])+'さん';
+  return(last>=0?s.slice(0,last+1):s)+'さん';
+}
+
+function padName(text, width){
+  if(!text)text='';
+  let w=0;
+  for(const c of text){
+    const code=c.charCodeAt(0);
+    if(code<=0x007F) w+=0.5;
+    else if('ノ々ヶヵー〻'.indexOf(c)>=0) w+=0.85;
+    else w+=1.0;
+  }
+  const padCount=Math.max(0,width-Math.ceil(w));
+  return text+'　'.repeat(padCount);
 }
 
 function spCalc(){
@@ -758,13 +985,28 @@ function spCalc(){
     </tr>`;
   }).join('');
 
-  // SNSテキスト
-  const lines=cands.filter(c=>c.mx>0).map(c=>{
-    // SNS表示は通常時刻表記（深夜は27:00等そのまま）
-    return `${sanName(c.name)}　${minsToDisplay(c.start)}～`;
+  // SNSテキスト（ヘッダー・フッター・完売対応）
+  checkSoldOutReset();
+  const fmt = ld('snsFormat',{header:'',footer:'',sold:'　完🎉'});
+  const soldMark = fmt.sold||'　完🎉';
+
+  // 受付可能（完売でない）
+  const activeLines = cands.filter(c=>c.mx>0&&!soldOut[c.id]).map(c=>{
+    return padName(sanName(c.name),6)+minsToDisplay(c.start)+'～';
   });
-  document.getElementById('spSns').textContent=
-    lines.length?lines.join('\n'):'（受付可能なセラピストがいません）';
+  // 完売セラピスト（出勤中で完売設定あり）
+  const att = ld('attendance',[]);
+  const therapists = ld('therapists',[]);
+  const soldLines = therapists
+    .filter(t=>soldOut[t.id]&&att.find(a=>a.therapistId===t.id))
+    .map(t=>padName(sanName(t.name),6)+soldMark);
+
+  const allLines = [...activeLines, ...soldLines];
+  const parts=[];
+  if(fmt.header) parts.push(fmt.header);
+  parts.push(allLines.length?allLines.join('\n'):'（受付可能なセラピストがいません）');
+  if(fmt.footer) parts.push(fmt.footer);
+  document.getElementById('spSns').textContent=parts.join('\n\n');
 }
 
 function spOpenBk(therapistId, startMins, maxCourse){
@@ -980,6 +1222,7 @@ function openM(name){
   document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
   document.getElementById('m-'+name).classList.remove('hidden');
   if(name==='att')openAtt();
+  if(name==='sold'){}
   if(name==='newArea'){
     document.getElementById('areaModalTitle').textContent='エリア追加';
     document.getElementById('area-id').value='';
@@ -1885,6 +2128,37 @@ function renderAttCards(){
   });
 }
 
+// ── ACCORDION ──
+function toggleAccord(id){
+  const body = document.getElementById(id);
+  const arrow = document.getElementById(id+'-arrow');
+  if(!body)return;
+  const hidden = body.classList.contains('hidden');
+  body.classList.toggle('hidden', !hidden);
+  if(arrow) arrow.textContent = hidden ? '▼' : '▶';
+}
+
+// ── SNS FORMAT ──
+function loadSnsFormat(){
+  const fmt = ld('snsFormat',{header:'',footer:'',sold:''});
+  const h = document.getElementById('sns-header');
+  const f = document.getElementById('sns-footer');
+  const s = document.getElementById('sns-sold');
+  if(h) h.value = fmt.header||'';
+  if(f) f.value = fmt.footer||'';
+  if(s) s.value = fmt.sold||'';
+}
+
+function saveSnsFormat(){
+  const header = document.getElementById('sns-header')?.value||'';
+  const footer = document.getElementById('sns-footer')?.value||'';
+  const sold = document.getElementById('sns-sold')?.value||'';
+  sv('snsFormat',{header,footer,sold});
+  const msg = document.getElementById('sns-save-msg');
+  if(msg){msg.textContent='保存しました';setTimeout(()=>msg.textContent='',2000);}
+  spCalc();
+}
+
 // ── AREA MANAGEMENT ──
 function renderAreaList(){
   const areas=ld('areas',[]);
@@ -1939,7 +2213,7 @@ function showPage(name,btn){
   if(name==='booking')renderBookingPage();
   if(name==='menuMgr')renderMenuMgr();
   if(name==='sales')renderSales();
-  if(name==='storeSetting')renderAreaList();
+  if(name==='storeSetting'){renderAreaList();loadSnsFormat();}
 }
 initData();
 </script>
