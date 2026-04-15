@@ -718,6 +718,8 @@ function doLogin(){
   applyRole();
   renderAll();
   spNow();
+  // 必ずダッシュボードを表示
+  showPage('dash', document.querySelector('.nb'));
 }
 function doLogout(){
   CUR=null;
