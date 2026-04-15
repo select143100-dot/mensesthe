@@ -288,7 +288,7 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
     <div class="page hidden" id="page-booking">
       <div class="rb" style="margin-bottom:12px">
         <div class="row" style="gap:6px">
-          <input type="date" id="bkDateFilter" class="inp-sm" style="width:auto" onchange="renderBookingPage()">
+          <input type="date" id="bkDateFilter" class="inp-sm" style="width:auto" onchange="(async()=>{await loadBookingsForDate(this.value);renderBookingPage();})()">
           <span id="bkDateYoubi" style="font-size:13px;color:var(--ts);font-weight:500"></span>
         </div>
         <button class="btn btn-g btn-sm" onclick="openNewBk()">＋ 予約追加</button>
@@ -629,6 +629,58 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
 
 <script>
 // ── STORAGE ──
+const SUPA_URL='https://jeixxicbyobundpxcowi.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplaXh4aWNieW9idW5kcHhjb3dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTMxMTQsImV4cCI6MjA5MTgyOTExNH0.QxLYgRPm43LJP-eke5YvLYOzUvRUbJ3Zb8rHceBlg0o';
+
+// Supabase REST API ヘルパー
+async function sbGet(table, params=''){
+  const res=await fetch(`${SUPA_URL}/rest/v1/${table}?${params}`,{
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'}
+  });
+  if(!res.ok){
+    console.error('[Supabase] sbGet失敗:', table, res.status, await res.text());
+    return[];
+  }
+  return await res.json();
+}
+async function sbPost(table, data){
+  const res=await fetch(`${SUPA_URL}/rest/v1/${table}`,{
+    method:'POST',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+    body:JSON.stringify(data)
+  });
+  if(!res.ok)return null;
+  const json=await res.json();
+  return Array.isArray(json)?json[0]:json;
+}
+async function sbPatch(table, id, data, idCol='id'){
+  const res=await fetch(`${SUPA_URL}/rest/v1/${table}?${idCol}=eq.${id}`,{
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+    body:JSON.stringify(data)
+  });
+  if(!res.ok)return null;
+  const json=await res.json();
+  return Array.isArray(json)?json[0]:json;
+}
+async function sbDelete(table, id, idCol='id'){
+  await fetch(`${SUPA_URL}/rest/v1/${table}?${idCol}=eq.${id}`,{
+    method:'DELETE',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+}
+async function sbUpsert(table, data, onConflict='id'){
+  const res=await fetch(`${SUPA_URL}/rest/v1/${table}?on_conflict=${onConflict}`,{
+    method:'POST',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
+    body:JSON.stringify(data)
+  });
+  if(!res.ok)return null;
+  const json=await res.json();
+  return Array.isArray(json)?json[0]:json;
+}
+
+// localStorage はセッション・UI状態のみ使用
 const ld=(k,d)=>{try{const v=localStorage.getItem('luxe_'+k);return v?JSON.parse(v):d}catch{return d}};
 const sv=(k,v)=>{try{localStorage.setItem('luxe_'+k,JSON.stringify(v))}catch{}};
 
@@ -636,63 +688,8 @@ let CUR=null;
 
 // ── INIT ──
 function initData(){
-  if(ld('init',false))return;
-  sv('accounts',[
-    {id:'dev',username:'developer',password:'dev2024',role:'dev',display:'製作者'},
-    {id:'adm1',username:'admin',password:'admin123',role:'admin',display:'管理者'},
-    {id:'stf1',username:'staff1',password:'staff1',role:'staff',display:'内勤1'},
-  ]);
-  sv('therapists',[
-    {id:1,name:'田中 彩',rank:'ノーマル',face:'かわいい',body:'スレンダー',kan:'◎',caution:'',interval:20,nomFee:1000,memo:''},
-    {id:2,name:'田村 麻衣',rank:'ノーマル',face:'清楚',body:'普通',kan:'〇',caution:'',interval:20,nomFee:1000,memo:''},
-    {id:3,name:'中村 葵',rank:'ゴールド',face:'きれい',body:'スレンダー',kan:'◎',caution:'',interval:20,nomFee:2000,memo:'人気No.1'},
-  ]);
-  sv('attendance',[
-    {therapistId:1,start:'10:00',end:'22:00'},
-    {therapistId:2,start:'12:00',end:'22:00'},
-    {therapistId:3,start:'10:00',end:'23:00'},
-  ]);
-  sv('menuCourse',[
-    {label:'60分', mins:60, price:15000},
-    {label:'80分', mins:80, price:20000},
-    {label:'100分', mins:100, price:25000},
-    {label:'120分', mins:120, price:30000},
-  ]);
-  sv('menuExt',[
-    {label:'20分', mins:20, price:5000},
-    {label:'40分', mins:40, price:10000},
-    {label:'60分', mins:60, price:15000},
-    {label:'80分', mins:80, price:20000},
-    {label:'100分', mins:100, price:25000},
-    {label:'120分', mins:120, price:30000},
-    {label:'140分', mins:140, price:35000},
-    {label:'160分', mins:160, price:40000},
-    {label:'180分', mins:180, price:45000},
-    {label:'200分', mins:200, price:50000},
-  ]);
-  sv('menuOp',[
-    {label:'有', price:5000},
-    {label:'無', price:0},
-  ]);
-  sv('menuNom',[
-    {label:'F', price:0},
-    {label:'写', price:0},
-    {label:'姫', price:0},
-    {label:'本', price:null}, // セラピスト紐づき
-  ]);
-  sv('menuDisc',[
-    {label:'1000円引', price:1000},
-    {label:'2000円引', price:2000},
-    {label:'3000円引', price:3000},
-    {label:'5000円引', price:5000},
-  ]);
-  sv('bookings',[]);
-  sv('areas',[
-    {id:1, name:'柏'},
-    {id:2, name:'船橋'},
-  ]);
-  sv('nid',{th:10,bk:100,area:10});
-  sv('init',true);
+  // Supabase移行済み: 初期データはSupabaseに格納
+  console.log('initData: Supabase mode');
 }
 
 function nid(t){const ids=ld('nid',{th:10,bk:100});const id=(ids[t]||10)+1;ids[t]=id;sv('nid',ids);return id;}
@@ -707,22 +704,35 @@ function getToday(){
 function fp(n){return '¥'+Number(n).toLocaleString();}
 
 // ── AUTH ──
-function doLogin(){
+async function doLogin(){
   const u=document.getElementById('l-user').value.trim();
   const p=document.getElementById('l-pass').value;
-  const acc=ld('accounts',[]).find(a=>a.username===u&&a.password===p);
-  if(!acc){document.getElementById('l-err').textContent='ユーザー名またはパスワードが違います';return;}
-  CUR=acc;
-  document.getElementById('screen-login').classList.add('hidden');
-  const sm=document.getElementById('screen-main');sm.classList.remove('hidden');sm.style.display='flex';
-  applyRole();
-  renderAll();
-  spNow();
-  // 必ずダッシュボードを表示
-  showPage('dash', document.querySelector('.nb'));
+  const errEl=document.getElementById('l-err');
+  errEl.textContent='認証中...';
+  try{
+    // localStorageのデータキャッシュをクリア（古いデータが残らないように）
+    const clearKeys=['therapists','attendance','bookings','menuCourse','menuExt','menuOp','menuNom','menuDisc','areas','snsFormat'];
+    clearKeys.forEach(k=>localStorage.removeItem('luxe_'+k));
+    const accs=await sbGet('accounts',`username=eq.${encodeURIComponent(u)}&password=eq.${encodeURIComponent(p)}`);
+    if(!accs||accs.length===0){errEl.textContent='ユーザー名またはパスワードが違います';return;}
+    const a=accs[0];
+    CUR={id:a.id,username:a.username,role:a.role,display:a.display};
+    errEl.textContent='';
+    document.getElementById('screen-login').classList.add('hidden');
+    const sm=document.getElementById('screen-main');sm.classList.remove('hidden');sm.style.display='flex';
+    applyRole();
+    await renderAll();
+    spNow();
+    showPage('dash', document.querySelector('.nb'));
+    startPolling();
+  }catch(e){
+    errEl.textContent='接続エラーが発生しました';
+    console.error(e);
+  }
 }
 function doLogout(){
   CUR=null;
+  stopPolling();
   document.getElementById('screen-main').classList.add('hidden');
   document.getElementById('screen-main').style.display='none';
   document.getElementById('screen-login').classList.remove('hidden');
@@ -749,9 +759,75 @@ const isAdmin=()=>CUR&&(CUR.role==='admin'||CUR.role==='dev');
 const isDev=()=>CUR&&CUR.role==='dev';
 
 // ── RENDER ──
-function renderAll(){
+async function renderAll(){
+  await loadAllFromSupabase();
   renderDash();
   renderTherapists();
+}
+
+// データマッパー（共通）
+function mapBk(b){
+  return {
+    id:b.id,date:b.work_date,therapistId:b.therapist_id,
+    start:b.start_time,end:b.end_time,course:b.course,ext:b.ext||0,
+    cname:b.cname,tel4:b.tel4,attr:b.attr,nom:b.nom,
+    payment:b.payment,disc:b.disc||0,op:b.op,total:b.total||0,
+    memo:b.memo,status:b.status||'active',
+    createdBy:b.created_by,createdByName:b.created_by_name,history:b.history||[]
+  };
+}
+function mapTh(t){
+  return {
+    id:t.id,name:t.name,rank:t.rank,face:t.face,body:t.body,
+    kan:t.kan,caution:t.caution,interval:t.interval||20,
+    nomFee:t.nom_fee||0,memo:t.memo
+  };
+}
+function mapAtt(a){
+  return {therapistId:a.therapist_id,start:a.start_time,end:a.end_time,areaId:a.area_id,areaName:a.area_name};
+}
+
+async function loadAllFromSupabase(){
+  console.log('[Supabase] loadAllFromSupabase 開始');
+  try{
+    // メニューデータ
+    const [courses,exts,ops,noms,discs,areas,therapists,settings] = await Promise.all([
+      sbGet('menu_course','order=mins.asc'),
+      sbGet('menu_ext','order=mins.asc'),
+      sbGet('menu_op','order=id.asc'),
+      sbGet('menu_nom','order=id.asc'),
+      sbGet('menu_disc','order=price.asc'),
+      sbGet('areas','order=id.asc'),
+      sbGet('therapists','order=id.asc'),
+      sbGet('settings'),
+    ]);
+    sv('menuCourse', courses.map(c=>({id:c.id,label:c.label,mins:c.mins,price:c.price})));
+    sv('menuExt', exts.map(e=>({id:e.id,label:e.label,mins:e.mins,price:e.price})));
+    sv('menuOp', ops.map(o=>({id:o.id,label:o.label,price:o.price})));
+    sv('menuNom', noms.map(n=>({id:n.id,label:n.label,price:n.price})));
+    sv('menuDisc', discs.map(d=>({id:d.id,label:d.label,price:d.price})));
+    sv('areas', areas.map(a=>({id:a.id,name:a.name})));
+    sv('therapists', therapists.map(mapTh));
+    console.log('[Supabase] therapists取得:', therapists.length, '件');
+    // SNS設定
+    const snsHeader = settings.find(s=>s.key==='sns_header')?.value||'';
+    const snsFooter = settings.find(s=>s.key==='sns_footer')?.value||'';
+    const snsSold   = settings.find(s=>s.key==='sns_sold')?.value||'　完🎉';
+    sv('snsFormat',{header:snsHeader, footer:snsFooter, sold:snsSold});
+
+    // 今日の出勤・予約
+    const today = getToday();
+    const [atts, bks] = await Promise.all([
+      sbGet('attendance',`work_date=eq.${today}`),
+      sbGet('bookings',`work_date=eq.${today}&order=start_time.asc`),
+    ]);
+    sv('attendance', atts.map(mapAtt));
+    sv('bookings', bks.map(mapBk));
+    console.log('[Supabase] bookings取得:', bks.length, '件');
+    console.log('[Supabase] loadAllFromSupabase 完了');
+  }catch(e){
+    console.error('Supabase load error:', e);
+  }
 }
 
 function renderDash(){
@@ -1151,10 +1227,11 @@ function clearAR(id){
   renderAttCards();
 }
 
-function saveAtt(){
-  const therapists = ld('therapists',[]);
-  const att = [];
+async function saveAtt(){
+  const therapists=ld('therapists',[]);
+  const today=getToday();
   const ids = Object.keys(attSelected);
+  const insertData=[];
   for(const idStr of ids){
     const tid = parseInt(idStr);
     const sEl = document.getElementById('as-'+tid);
@@ -1169,15 +1246,24 @@ function saveAtt(){
     if(!start||!end){alert((t?.name||idStr)+': 開始・終了の両方を入力してください');return;}
     const areaId = aEl?.value ? parseInt(aEl.value) : null;
     const areaName = areaId ? ld('areas',[]).find(a=>a.id===areaId)?.name||'' : '';
-    att.push({therapistId:tid, start, end, areaId, areaName});
+    insertData.push({therapist_id:tid, work_date:today, start_time:start, end_time:end, area_id:areaId, area_name:areaName});
   }
-  sv('attendance', att);
+  // 今日の出勤データを全削除→再挿入
+  await fetch(`${SUPA_URL}/rest/v1/attendance?work_date=eq.${today}`,{
+    method:'DELETE',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  if(insertData.length>0){
+    await sbPost('attendance', insertData);
+  }
+  const atts=await sbGet('attendance',`work_date=eq.${today}`);
+  sv('attendance', atts.map(mapAtt));
+  attSelected={};
   closeM();
   spCalc();
   renderTherapists();
 }
 
-// ── THERAPISTS ──
 function renderTherapists(){
   const att=ld('attendance',[]);
   const therapists=ld('therapists',[]);
@@ -1233,47 +1319,38 @@ function openEditTh(id){
   document.getElementById('m-newTh').classList.remove('hidden');
 }
 
-function saveTh(){
-  const rawId=document.getElementById('th-id').value;
-  const name=document.getElementById('th-name').value.trim();
-  if(!name){alert('氏名を入力してください');return;}
-  const data={
-    name,
-    rank:document.getElementById('th-rank').value,
-    face:document.getElementById('th-face').value,
-    body:document.getElementById('th-body').value,
-    kan:document.getElementById('th-kan').value,
-    caution:document.getElementById('th-caution').value.trim(),
-    interval:parseInt(document.getElementById('th-interval').value)||20,
-    nomFee:parseInt(document.getElementById('th-nomfee').value)||1000,
-    memo:document.getElementById('th-memo').value.trim(),
+async function saveTh(){
+  const rawId = document.getElementById('th-id').value;
+  const data = {
+    name: document.getElementById('th-name').value.trim(),
+    rank: document.getElementById('th-rank')?.value||'',
+    face: document.getElementById('th-face').value.trim(),
+    body: document.getElementById('th-body').value.trim(),
+    kan: document.getElementById('th-kan')?.value||'',
+    caution: document.getElementById('th-caution').value.trim(),
+    interval: parseInt(document.getElementById('th-interval').value)||20,
+    nom_fee: parseInt(document.getElementById('th-nomfee').value)||0,
+    memo: document.getElementById('th-memo').value.trim(),
   };
-  const list=ld('therapists',[]);
+  if(!data.name){alert('名前を入力してください');return;}
   if(!rawId){
-    // 新規追加
-    list.push({id:nid('th'),...data});
+    await sbPost('therapists', data);
   } else {
-    // 編集: IDで確実に特定
-    const numId=parseInt(rawId);
-    const idx=list.findIndex(x=>x.id===numId);
-    if(idx>=0){
-      list[idx]={...list[idx],...data};
-    } else {
-      alert('編集対象が見つかりませんでした');return;
-    }
+    await sbPatch('therapists', parseInt(rawId), data);
   }
-  sv('therapists',list);
+  const therapists = await sbGet('therapists','order=id.asc');
+  sv('therapists', therapists.map(mapTh));
   closeM();
   renderTherapists();
-  spCalc();
 }
 
-function deleteTh(id){
+
+async function deleteTh(id){
   if(!confirm('削除しますか？'))return;
-  sv('therapists',ld('therapists',[]).filter(t=>t.id!==id));
-  sv('attendance',ld('attendance',[]).filter(a=>a.therapistId!==id));
+  await sbDelete('therapists', id);
+  const therapists = await sbGet('therapists','order=id.asc');
+  sv('therapists', therapists.map(mapTh));
   renderTherapists();
-  spCalc();
 }
 
 // ── MODAL ──
@@ -1377,6 +1454,11 @@ function renderBookingPage(){
 function setBkFilter(id){
   bkThFilter = id==='all' ? 'all' : parseInt(id);
   renderBookingPage();
+}
+
+async function loadBookingsForDate(date){
+  const bks=await sbGet('bookings',`work_date=eq.${date}&order=start_time.asc`);
+  sv('bookings', bks.map(mapBk));
 }
 
 function bkCardHTML(bk){
@@ -1685,7 +1767,7 @@ function calcBkTotal(){
   return Math.round(total);
 }
 
-function saveBk(){
+async function saveBk(){
   const therapistId = parseInt(document.getElementById('bk-therapist').value)||0;
   const start = document.getElementById('bk-start').value;
   const course = parseInt(segGet('course'))||0;
@@ -1756,94 +1838,106 @@ function saveBk(){
   const now = new Date().toISOString();
   if(!rawId){
     // 新規追加: createdBy・createdAt・historyを付与
-    bookings.push({
-      id:nid('bk'),
-      ...bkData,
-      createdBy: CUR.id,
-      createdByName: CUR.display,
-      createdAt: now,
-      history:[{
-        action:'追加',
-        by: CUR.id,
-        byName: CUR.display,
-        at: now,
-      }],
+    // Supabase INSERT
+    const newBk = await sbPost('bookings',{
+      work_date: bkData.date,
+      therapist_id: bkData.therapistId,
+      start_time: bkData.start,
+      end_time: bkData.end,
+      course: bkData.course,
+      ext: bkData.ext||0,
+      cname: bkData.cname,
+      tel4: bkData.tel4,
+      attr: bkData.attr,
+      nom: bkData.nom,
+      payment: bkData.payment,
+      disc: bkData.disc||0,
+      op: bkData.op,
+      total: total,
+      memo: bkData.memo,
+      status: 'active',
+      created_by: CUR.id,
+      created_by_name: CUR.display,
+      history: [{action:'追加',by:CUR.id,byName:CUR.display,at:now}]
     });
   } else {
-    // 編集: historyに変更ログを追記
+    // Supabase PATCH
     const numId = parseInt(rawId);
-    const idx = bookings.findIndex(x=>x.id===numId);
-    if(idx>=0){
-      const prev = bookings[idx];
-      const hist = prev.history||[];
-      hist.push({
-        action:'変更',
-        by: CUR.id,
-        byName: CUR.display,
-        at: now,
-      });
-      bookings[idx]={...prev,...bkData,history:hist};
-    }
+    const prev = bookings.find(x=>x.id===numId);
+    const hist = prev?.history||[];
+    hist.push({action:'変更',by:CUR.id,byName:CUR.display,at:now});
+    await sbPatch('bookings', numId, {
+      work_date: bkData.date,
+      therapist_id: bkData.therapistId,
+      start_time: bkData.start,
+      end_time: bkData.end,
+      course: bkData.course,
+      ext: bkData.ext||0,
+      cname: bkData.cname,
+      tel4: bkData.tel4,
+      attr: bkData.attr,
+      nom: bkData.nom,
+      payment: bkData.payment,
+      disc: bkData.disc||0,
+      op: bkData.op,
+      total: total,
+      memo: bkData.memo,
+      history: hist
+    });
   }
-  sv('bookings', bookings);
+  // ローカルキャッシュ更新
+  const today=getToday();
+  const bks=await sbGet('bookings',`work_date=eq.${today}&order=start_time.asc`);
+  sv('bookings', bks.map(mapBk));
   closeM();
   renderBookingPage();
   spCalc();
 }
 
-function deleteBk(){
+async function deleteBk(){
   const rawId = document.getElementById('bk-id').value;
   if(!rawId)return;
   if(!confirm('この予約をキャンセルしますか？'))return;
   const numId = parseInt(rawId);
-  const bookings = ld('bookings',[]);
-  const target = bookings.find(x=>x.id===numId);
-  if(target){
-    const now = new Date().toISOString();
-    const hist = target.history||[];
-    hist.push({action:'キャンセル', by:CUR.id, byName:CUR.display, at:now});
-    target.status='cancel';
-    target.history=hist;
-  }
-  sv('bookings', bookings);
+  const now = new Date().toISOString();
+  const bk = ld('bookings',[]).find(x=>x.id===numId);
+  const hist = bk?.history||[];
+  hist.push({action:'キャンセル',by:CUR.id,byName:CUR.display,at:now});
+  await sbPatch('bookings', numId, {status:'cancel', history:hist});
+  const today=getToday();
+  const bks=await sbGet('bookings',`work_date=eq.${today}&order=start_time.asc`);
+  sv('bookings', bks.map(mapBk));
   closeM();
-  // キャンセル後はキャンセル絞り込みに切り替えて確認しやすく
   const sf = document.getElementById('statusFilter');
   if(sf) sf.value = 'cancel';
   renderBookingPage();
   spCalc();
 }
 
-function cancelBk(id){
-  // 一覧からのキャンセル処理
+async function cancelBk(id){
   if(!confirm('この予約をキャンセルしますか？'))return;
-  const bookings = ld('bookings',[]);
-  const target = bookings.find(x=>x.id===id);
-  if(target){
-    const now = new Date().toISOString();
-    const hist = target.history||[];
-    hist.push({action:'キャンセル', by:CUR.id, byName:CUR.display, at:now});
-    target.status='cancel';
-    target.history=hist;
-  }
-  sv('bookings', bookings);
+  const now = new Date().toISOString();
+  const bk = ld('bookings',[]).find(x=>x.id===id);
+  const hist = bk?.history||[];
+  hist.push({action:'キャンセル',by:CUR.id,byName:CUR.display,at:now});
+  await sbPatch('bookings', id, {status:'cancel', history:hist});
+  const today=getToday();
+  const bks=await sbGet('bookings',`work_date=eq.${today}&order=start_time.asc`);
+  sv('bookings', bks.map(mapBk));
   renderBookingPage();
   spCalc();
 }
 
-function restoreBk(id){
-  // キャンセル→成約に戻す
+async function restoreBk(id){
   if(!confirm('この予約を成約に戻しますか？'))return;
-  const bookings = ld('bookings',[]);
-  const target = bookings.find(x=>x.id===id);
-  if(target){
-    const now = new Date().toISOString();
-    const hist = target.history||[];
-    hist.push({action:'再予約', by:CUR.id, byName:CUR.display, at:now});
-    target.status='active';
-    target.history=hist;
-  }
-  sv('bookings', bookings);
+  const now = new Date().toISOString();
+  const bk = ld('bookings',[]).find(x=>x.id===id);
+  const hist = bk?.history||[];
+  hist.push({action:'再予約',by:CUR.id,byName:CUR.display,at:now});
+  await sbPatch('bookings', id, {status:'active', history:hist});
+  const today=getToday();
+  const bks=await sbGet('bookings',`work_date=eq.${today}&order=start_time.asc`);
+  sv('bookings', bks.map(mapBk));
   renderBookingPage();
   spCalc();
 }
@@ -1908,43 +2002,48 @@ function openMenuItemModal(type, idx){
   openM('menuItem');
 }
 
-function saveMenuItem(){
+async function saveMenuItem(){
   const type = document.getElementById('mi-type').value;
   const idx = document.getElementById('mi-idx').value;
   const label = document.getElementById('mi-label').value.trim();
   const price = parseInt(document.getElementById('mi-price').value)||0;
   if(!label){alert('名称を入力してください');return;}
-  const cfg = MENU_TYPES[type];
-  if(!cfg)return;
-  const items = ld(cfg.key,[]);
+  const tableMap={course:'menu_course',ext:'menu_ext',op:'menu_op',disc:'menu_disc'};
+  const keyMap={course:'menuCourse',ext:'menuExt',op:'menuOp',disc:'menuDisc'};
+  const table=tableMap[type];
+  const key=keyMap[type];
+  if(!table)return;
   if(idx===''){
-    items.push({label, price});
+    await sbPost(table,{label,price});
   } else {
-    items[parseInt(idx)] = {...items[parseInt(idx)], label, price};
+    const items=ld(key,[]);
+    await sbPatch(table, items[parseInt(idx)].id, {label,price});
   }
-  sv(cfg.key, items);
+  const rows=await sbGet(table,'order=id.asc');
+  sv(key, rows.map(r=>({id:r.id,label:r.label,mins:r.mins,price:r.price})));
   closeM();
   renderMenuMgr();
-  // コースボタンも更新
   if(type==='course') rebuildCourseButtons();
   if(type==='ext') rebuildExtButtons();
   if(type==='disc') rebuildDiscButtons();
 }
 
-function deleteMenuItem(type, idx){
+async function deleteMenuItem(type, idx){
   if(!confirm('削除しますか？'))return;
-  const cfg = MENU_TYPES[type];
-  if(!cfg)return;
-  const items = ld(cfg.key,[]);
-  items.splice(idx,1);
-  sv(cfg.key, items);
+  const tableMap={course:'menu_course',ext:'menu_ext',op:'menu_op',disc:'menu_disc'};
+  const keyMap={course:'menuCourse',ext:'menuExt',op:'menuOp',disc:'menuDisc'};
+  const table=tableMap[type];
+  const key=keyMap[type];
+  const items=ld(key,[]);
+  await sbDelete(table, items[idx].id);
+  const rows=await sbGet(table,'order=id.asc');
+  sv(key, rows.map(r=>({id:r.id,label:r.label,mins:r.mins,price:r.price})));
   renderMenuMgr();
   if(type==='course') rebuildCourseButtons();
   if(type==='ext') rebuildExtButtons();
   if(type==='disc') rebuildDiscButtons();
 }
 
-// 予約モーダルのコース/延長/割引ボタンをメニューデータから動的生成
 function rebuildCourseButtons(){
   const courses = ld('menuCourse',[]);
   const wrap = document.getElementById('seg-course');
@@ -2224,10 +2323,15 @@ function loadSnsFormat(){
   if(s) s.value = fmt.sold||'';
 }
 
-function saveSnsFormat(){
+async function saveSnsFormat(){
   const header = document.getElementById('sns-header')?.value||'';
   const footer = document.getElementById('sns-footer')?.value||'';
   const sold = document.getElementById('sns-sold')?.value||'';
+  await Promise.all([
+    sbUpsert('settings',{key:'sns_header',value:header},'key'),
+    sbUpsert('settings',{key:'sns_footer',value:footer},'key'),
+    sbUpsert('settings',{key:'sns_sold',value:sold},'key'),
+  ]);
   sv('snsFormat',{header,footer,sold});
   const msg = document.getElementById('sns-save-msg');
   if(msg){msg.textContent='保存しました';setTimeout(()=>msg.textContent='',2000);}
@@ -2255,36 +2359,37 @@ function openEditArea(idx){
   openM('newArea');
 }
 
-function saveArea(){
+async function saveArea(){
   const idx=document.getElementById('area-id').value;
   const name=document.getElementById('area-name').value.trim();
   if(!name){alert('エリア名を入力してください');return;}
   const areas=ld('areas',[]);
   if(idx===''){
-    const newId=nid('area');
-    areas.push({id:newId,name});
+    await sbPost('areas',{name});
   } else {
-    areas[parseInt(idx)]={...areas[parseInt(idx)],name};
+    await sbPatch('areas', areas[parseInt(idx)].id, {name});
   }
-  sv('areas',areas);
+  const rows=await sbGet('areas','order=id.asc');
+  sv('areas', rows.map(a=>({id:a.id,name:a.name})));
   closeM();
   renderAreaList();
 }
 
-function deleteArea(idx){
+async function deleteArea(idx){
   if(!confirm('削除しますか？'))return;
   const areas=ld('areas',[]);
-  areas.splice(idx,1);
-  sv('areas',areas);
+  await sbDelete('areas', areas[idx].id);
+  const rows=await sbGet('areas','order=id.asc');
+  sv('areas', rows.map(a=>({id:a.id,name:a.name})));
   renderAreaList();
 }
 
-// ── ACCOUNTS ──
-function renderAccounts(){
-  const accs = ld('accounts',[]);
+async function renderAccounts(){
+  console.log('[Supabase] renderAccounts 開始');
+  const accs = await sbGet('accounts','order=id.asc');
+  console.log('[Supabase] accounts取得:', accs?.length, '件', accs);
   const rl={dev:'製作者',admin:'管理者',staff:'内勤'};
   const rc={dev:'rb-dev',admin:'rb-admin',staff:'rb-staff'};
-  // 製作者は製作者のみ見える
   const visible = isDev() ? accs : accs.filter(a=>a.role!=='dev');
   document.getElementById('accList').innerHTML = visible.map(a=>`
     <div class="mgr-item">
@@ -2320,192 +2425,116 @@ function canEditAcc(a){
   return isAdmin();
 }
 
-function openEditAcc(id){
-  const a=ld('accounts',[]).find(x=>x.id===id);if(!a)return;
+async function openEditAcc(id){
+  const accs=await sbGet('accounts',`id=eq.${id}`);
+  const a=accs[0];if(!a)return;
   document.getElementById('accModalTitle').textContent='アカウント編集';
   document.getElementById('acc-id').value=id;
   document.getElementById('acc-display').value=a.display||'';
   document.getElementById('acc-username').value=a.username||'';
   document.getElementById('acc-pass').value='';
   document.getElementById('acc-role').value=a.role||'staff';
-  // 製作者は製作者ロールも選択可
-  const roleEl=document.getElementById('acc-role');
-  if(isDev()){
-    roleEl.innerHTML='<option value="admin">管理者</option><option value="staff">内勤</option>';
-  } else {
-    roleEl.innerHTML='<option value="admin">管理者</option><option value="staff">内勤</option>';
-  }
-  roleEl.value=a.role;
   openM('newAcc');
 }
 
-function saveAcc(){
-  const rawId=document.getElementById('acc-id').value;
-  const display=document.getElementById('acc-display').value.trim();
-  const username=document.getElementById('acc-username').value.trim();
-  const pass=document.getElementById('acc-pass').value;
-  const role=document.getElementById('acc-role').value;
-  if(!display||!username){alert('表示名とユーザー名を入力してください');return;}
-  const accs=ld('accounts',[]);
-  if(!rawId){
-    // 新規追加
-    if(!pass){alert('パスワードを入力してください');return;}
-    if(accs.find(a=>a.username===username)){alert('このユーザー名は既に使用されています');return;}
-    accs.push({id:'u'+Date.now(),username,password:pass,role,display});
-  } else {
-    // 編集
-    const idx=accs.findIndex(x=>x.id===rawId);
-    if(idx<0)return;
-    accs[idx]={...accs[idx],display,username,role};
-    if(pass) accs[idx].password=pass;
-  }
-  sv('accounts',accs);
-  closeM();
-  renderAccounts();
-}
-
-function delAcc(id){
-  if(!confirm('削除しますか？'))return;
-  sv('accounts',ld('accounts',[]).filter(a=>a.id!==id));
-  renderAccounts();
-}
-
-function openChgPw(uid){
-  const a=ld('accounts',[]).find(x=>x.id===uid);if(!a)return;
-  document.getElementById('pw-uid').value=uid;
-  ['pw-curr','pw-new','pw-new2'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('pw-err').textContent='';
-  // 本人変更か製作者同士以外は現在PW不要
-  const needCurr=CUR.id===uid;
-  document.getElementById('pw-curr-wrap').style.display=needCurr?'':'none';
-  openM('chgPw');
-}
-
-function savePw(){
-  const uid=document.getElementById('pw-uid').value;
-  const curr=document.getElementById('pw-curr').value;
-  const nw=document.getElementById('pw-new').value;
-  const nw2=document.getElementById('pw-new2').value;
-  const errEl=document.getElementById('pw-err');
-  if(nw!==nw2){errEl.textContent='新しいパスワードが一致しません';return;}
-  if(!nw){errEl.textContent='パスワードを入力してください';return;}
-  const accs=ld('accounts',[]);
-  const a=accs.find(x=>x.id===uid);if(!a)return;
-  if(document.getElementById('pw-curr-wrap').style.display!=='none'&&a.password!==curr){
-    errEl.textContent='現在のパスワードが違います';return;
-  }
-  a.password=nw;
-  sv('accounts',accs);
-  if(CUR.id===uid)CUR.password=nw;
-  closeM();
-  alert('パスワードを変更しました');
-}
-
-function showPage(name,btn){
-  document.querySelectorAll('.page').forEach(p=>{p.classList.add('hidden');p.classList.remove('active')});
+// ページ表示制御
+async function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('page-'+name)?.classList.remove('hidden');
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
-  const p=document.getElementById('page-'+name);
-  if(p){p.classList.remove('hidden');p.classList.add('active');}
   if(btn)btn.classList.add('active');
+  // タブ切り替え時にSupabaseから最新データ取得
+  await syncFromSupabase(name);
   if(name==='booking')renderBookingPage();
   if(name==='menuMgr')renderMenuMgr();
   if(name==='sales')renderSales();
   if(name==='storeSetting'){renderAreaList();loadSnsFormat();}
-  if(name==='accounts')renderAccounts();
+  if(name==='accounts'){await renderAccounts();}
+}
+
+// タブ別同期（必要なデータのみ取得）
+async function syncFromSupabase(name){
+  console.log('[Supabase] syncFromSupabase:', name);
+  try{
+    const today=getToday();
+    if(name==='dash'){
+      const [atts,bks,therapists]=await Promise.all([
+        sbGet('attendance',`work_date=eq.${today}`),
+        sbGet('bookings',`work_date=eq.${today}&order=start_time.asc`),
+        sbGet('therapists','order=id.asc'),
+      ]);
+      sv('attendance',atts.map(a=>({therapistId:a.therapist_id,start:a.start_time,end:a.end_time,areaId:a.area_id,areaName:a.area_name})));
+      sv('bookings',bks.map(mapBk));
+      sv('therapists',therapists.map(mapTh));
+    } else if(name==='booking'){
+      const dateEl=document.getElementById('bkDateFilter');
+      const date=dateEl?.value||today;
+      const bks=await sbGet('bookings',`work_date=eq.${date}&order=start_time.asc`);
+      sv('bookings',bks.map(mapBk));
+    } else if(name==='therapist'){
+      const [therapists,atts]=await Promise.all([
+        sbGet('therapists','order=id.asc'),
+        sbGet('attendance',`work_date=eq.${today}`),
+      ]);
+      sv('therapists',therapists.map(mapTh));
+      sv('attendance',atts.map(a=>({therapistId:a.therapist_id,start:a.start_time,end:a.end_time,areaId:a.area_id,areaName:a.area_name})));
+    } else if(name==='menuMgr'){
+      const [courses,exts,ops,noms,discs]=await Promise.all([
+        sbGet('menu_course','order=mins.asc'),
+        sbGet('menu_ext','order=mins.asc'),
+        sbGet('menu_op','order=id.asc'),
+        sbGet('menu_nom','order=id.asc'),
+        sbGet('menu_disc','order=price.asc'),
+      ]);
+      sv('menuCourse',courses.map(c=>({id:c.id,label:c.label,mins:c.mins,price:c.price})));
+      sv('menuExt',exts.map(e=>({id:e.id,label:e.label,mins:e.mins,price:e.price})));
+      sv('menuOp',ops.map(o=>({id:o.id,label:o.label,price:o.price})));
+      sv('menuNom',noms.map(n=>({id:n.id,label:n.label,price:n.price})));
+      sv('menuDisc',discs.map(d=>({id:d.id,label:d.label,price:d.price})));
+    } else if(name==='accounts'){
+      // アカウントは renderAccounts が直接Supabase取得するので不要
+    } else if(name==='storeSetting'){
+      const [areas,settings]=await Promise.all([
+        sbGet('areas','order=id.asc'),
+        sbGet('settings'),
+      ]);
+      sv('areas',areas.map(a=>({id:a.id,name:a.name})));
+      const snsHeader=settings.find(s=>s.key==='sns_header')?.value||'';
+      const snsFooter=settings.find(s=>s.key==='sns_footer')?.value||'';
+      const snsSold=settings.find(s=>s.key==='sns_sold')?.value||'　完🎉';
+      sv('snsFormat',{header:snsHeader,footer:snsFooter,sold:snsSold});
+    } else if(name==='sales'){
+      const dateEl=document.getElementById('salesDate');
+      const date=dateEl?.value||today;
+      const bks=await sbGet('bookings',`work_date=eq.${date}&order=start_time.asc`);
+      sv('bookings',bks.map(mapBk));
+    }
+  }catch(e){console.warn('sync error:',e);}
+}
+
+
+
+// B: 1分ごとの自動ポーリング
+let _pollTimer=null;
+function startPolling(){
+  if(_pollTimer)clearInterval(_pollTimer);
+  _pollTimer=setInterval(async()=>{
+    if(!CUR)return;
+    // 現在表示中のタブを取得
+    const activePage=document.querySelector('.page:not(.hidden)');
+    if(!activePage)return;
+    const name=activePage.id.replace('page-','');
+    await syncFromSupabase(name);
+    // 現在のタブを再描画
+    if(name==='dash'){renderDash();spCalc();}
+    else if(name==='booking')renderBookingPage();
+    else if(name==='therapist')renderTherapists();
+  }, 60000); // 1分
+}
+function stopPolling(){
+  if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}
 }
 initData();
 </script>
-<div id="m-newBk-wrap" class="hidden" style="position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.78);overflow-y:scroll;-webkit-overflow-scrolling:touch">
-  <div style="background:var(--dark2);border:1px solid var(--bdr);border-radius:12px;padding:12px;width:100%;min-height:100vh;box-sizing:border-box">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <span style="font-size:14px;font-weight:600;color:var(--gold)" id="bkModalTitle">予約追加</span>
-      <button class="btn btn-o btn-sm" onclick="closeM()">✕</button>
-    </div>
-    <input type="hidden" id="bk-id">
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-      <div>
-        <div class="bk-lbl">日付</div>
-        <input type="date" class="bk-inp" id="bk-date" onchange="updateTherapistSelect()">
-      </div>
-      <div>
-        <div class="bk-lbl">指名セラピスト</div>
-        <select class="bk-inp" id="bk-therapist" onchange="calcBkTotal()"></select>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-      <div>
-        <div class="bk-lbl">開始時間</div>
-        <input class="bk-inp" id="bk-start" placeholder="1000"
-          onblur="fmtTI(this);calcBkEnd()"
-          onkeydown="if(event.key==='Enter'){fmtTI(this);calcBkEnd();}">
-      </div>
-      <div>
-        <div class="bk-lbl">終了時間</div>
-        <div class="bk-disp" id="bk-end-disp">--:--</div>
-      </div>
-    </div>
-
-    <div class="bk-lbl">コース</div>
-    <div class="seg-wrap" id="seg-course" style="margin-bottom:6px"></div>
-
-    <div class="bk-lbl">延長</div>
-    <div class="seg-wrap seg-sm" id="seg-ext" style="margin-bottom:6px"></div>
-
-    <div style="display:grid;grid-template-columns:3fr 2fr;gap:6px;margin-bottom:6px">
-      <div>
-        <div class="bk-lbl">顧客名</div>
-        <input class="bk-inp" id="bk-cname" placeholder="山田 太郎">
-      </div>
-      <div>
-        <div class="bk-lbl">下四桁</div>
-        <input class="bk-inp" id="bk-tel4" placeholder="1234" maxlength="4">
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">
-      <div>
-        <div class="bk-lbl">属性</div>
-        <div class="seg-wrap" id="seg-attr" style="margin-bottom:0"></div>
-      </div>
-      <div>
-        <div class="bk-lbl">指名</div>
-        <div class="seg-wrap" id="seg-nom" style="margin-bottom:0;flex-wrap:wrap;gap:4px"></div>
-      </div>
-      <div>
-        <div class="bk-lbl">支払い</div>
-        <div style="display:flex;gap:4px">
-          <button class="pay-btn active" id="pay-cash" onclick="setPayment('現金')" style="padding:6px 4px;font-size:12px">現金</button>
-          <button class="pay-btn" id="pay-paypay" onclick="setPayment('PAYPAY')" style="padding:6px 4px;font-size:11px">PAY</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="bk-lbl">割引</div>
-    <div class="seg-wrap seg-sm" id="disc-btns" style="margin-bottom:4px"></div>
-    <input type="number" class="bk-inp" id="bk-disc" placeholder="0" oninput="calcBkTotal()" readonly style="margin-bottom:6px">
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-      <div id="op-wrap">
-        <div class="bk-lbl">OP</div>
-        <div class="seg-wrap" id="seg-op" style="margin-bottom:0"></div>
-      </div>
-      <div>
-        <div class="bk-lbl">総額</div>
-        <div class="bk-disp" id="bk-total-disp" style="color:var(--gold);font-weight:600">¥0</div>
-      </div>
-    </div>
-
-    <div style="margin-bottom:8px">
-      <button onclick="toggleMemo()" style="background:none;border:none;color:var(--ts);font-size:12px;cursor:pointer;padding:0" id="memo-toggle-btn">▶ メモ</button>
-      <textarea class="bk-inp hidden" id="bk-memo" rows="2" placeholder="備考" style="resize:none;margin-top:4px;width:100%"></textarea>
-    </div>
-
-    <button id="bk-del-btn" class="btn btn-d hidden" style="width:100%;padding:10px;font-size:14px;margin-bottom:6px" onclick="deleteBk()">この予約をキャンセル</button>
-    <button class="btn btn-g" style="width:100%;padding:10px;font-size:14px" onclick="saveBk()">保存</button>
-  
-  </div>
-</div>
 </body>
 </html>
