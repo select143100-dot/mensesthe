@@ -190,6 +190,7 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
     <button class="nb" onclick="showPage('therapist',this)">セラピスト一覧</button>
     <button class="nb" onclick="showPage('menuMgr',this)">メニュー管理</button>
     <button class="nb" onclick="showPage('sales',this)">売上</button>
+    <button class="nb" onclick="showPage('storeSetting',this)">店舗設定</button>
   </div>
   <div class="content">
 
@@ -204,7 +205,6 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
           <input class="sp-tinp" id="spTime" placeholder="1000" onblur="fmtTI(this);spCalc()" onkeydown="if(event.key==='Enter'){fmtTI(this);spCalc();}">
           <button class="sp-btn" onclick="spNow()">現在時刻</button>
           <button class="sp-btn-gold" onclick="spCalc()">再計算</button>
-          <button class="btn btn-o btn-sm" onclick="openM('att')" style="margin-left:auto">出勤登録</button>
         </div>
         <table class="sp-tbl">
           <thead>
@@ -220,6 +220,7 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
           <button class="sp-copy" onclick="spCopy()">コピー</button>
         </div>
       </div>
+      <button class="btn btn-o btn-sm" onclick="openM('att')" style="margin-top:8px;width:100%">出勤登録</button>
     </div>
 
     <!-- BOOKING PAGE -->
@@ -352,6 +353,15 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
 
     </div>
 
+  <!-- 店舗設定 -->
+    <div class="page hidden" id="page-storeSetting">
+      <div class="rb" style="margin-bottom:14px">
+        <span class="sec" style="margin:0">エリア管理</span>
+        <button class="btn btn-g btn-sm" onclick="openM('newArea')">＋ 追加</button>
+      </div>
+      <div id="areaList"></div>
+    </div>
+
   </div>
 </div>
 
@@ -379,11 +389,29 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
   <!-- 出勤登録 -->
   <div class="modal hidden" id="m-att">
     <div class="mt">出勤登録</div>
-    <div style="font-size:12px;color:var(--ts);margin-bottom:12px">出勤セラピストの勤務時間を入力（空欄＝非出勤）<br>4桁入力で自動変換（例: 1000 → 10:00）</div>
-    <div id="attRows"></div>
-    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px">
+    <!-- 検索・追加 -->
+    <div style="position:relative;margin-bottom:10px">
+      <input class="inp" id="attSearch" placeholder="セラピスト名で検索して追加..." oninput="renderAttSearch()" autocomplete="off" style="margin-bottom:0">
+      <div id="attSuggest" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--dark3);border:1px solid var(--gold-d);border-radius:var(--r);z-index:10;max-height:180px;overflow-y:auto"></div>
+    </div>
+    <!-- 追加済みカード -->
+    <div id="attRows" style="max-height:50vh;overflow-y:auto"></div>
+    <div style="font-size:11px;color:var(--tm);margin-bottom:10px" id="attCount">出勤登録: 0人</div>
+    <div class="row" style="justify-content:flex-end;gap:8px">
       <button class="btn btn-o" onclick="closeM()">キャンセル</button>
       <button class="btn btn-g" onclick="saveAtt()">登録</button>
+    </div>
+  </div>
+
+  <!-- エリア追加 -->
+  <div class="modal hidden" id="m-newArea">
+    <div class="mt" id="areaModalTitle">エリア追加</div>
+    <input type="hidden" id="area-id">
+    <label class="lbl">エリア名</label>
+    <input class="inp" id="area-name" placeholder="例: 柏">
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:8px">
+      <button class="btn btn-o" onclick="closeM()">キャンセル</button>
+      <button class="btn btn-g" onclick="saveArea()">保存</button>
     </div>
   </div>
 
@@ -510,7 +538,11 @@ function initData(){
     {label:'5000円引', price:5000},
   ]);
   sv('bookings',[]);
-  sv('nid',{th:10,bk:100});
+  sv('areas',[
+    {id:1, name:'柏'},
+    {id:2, name:'船橋'},
+  ]);
+  sv('nid',{th:10,bk:100,area:10});
   sv('init',true);
 }
 
@@ -621,8 +653,8 @@ function computeShortest(baseMins){
     const tBks=bookings
       .filter(b=>b.therapistId===t.id)
       .map(b=>{
-        const menu=ld('menus',[]).find(m=>m.id===b.menuId);
-        const dur=menu?menu.time:60;
+        const menu=ld('menuCourse',[]).find(m=>m.mins===b.course);
+        const dur=(menu?menu.mins:b.course||60)+(parseInt(b.ext)||0);
         const st=tsToMins(b.start);
         return{start:st,end:st+dur};
       })
@@ -796,46 +828,44 @@ function parseTI(raw){
 }
 
 function openAtt(){
-  const therapists=ld('therapists',[]);
-  const att=ld('attendance',[]);
-  document.getElementById('attRows').innerHTML=therapists.map(t=>{
-    const a=att.find(x=>x.therapistId===t.id);
-    return `<div class="att-row">
-      <span class="att-nm">${t.name}</span>
-      <input class="inp-sm" style="width:74px;text-align:center" id="as-${t.id}"
-        placeholder="1000" value="${a?.start||''}"
-        onblur="fmtTI(this)"
-        onkeydown="if(event.key==='Enter'||event.key==='Tab')fmtTI(this)">
-      <span style="color:var(--tm);font-size:14px">〜</span>
-      <input class="inp-sm" style="width:74px;text-align:center" id="ae-${t.id}"
-        placeholder="2200" value="${a?.end||''}"
-        onblur="fmtTI(this)"
-        onkeydown="if(event.key==='Enter'||event.key==='Tab')fmtTI(this)">
-      <button class="btn btn-d btn-sm" onclick="clearAR(${t.id})">クリア</button>
-    </div>`;
-  }).join('')||'<div style="color:var(--tm);font-size:13px">セラピストが登録されていません</div>';
+  // 当日の出勤データを読み込んでカードを復元
+  const att = ld('attendance',[]);
+  attSelected = {};
+  att.forEach(a=>{
+    attSelected[a.therapistId] = {start:a.start, end:a.end, areaId:a.areaId||null, areaName:a.areaName||''};
+  });
+  document.getElementById('attSearch').value='';
+  document.getElementById('attSuggest').style.display='none';
+  renderAttCards();
 }
 
+
 function clearAR(id){
-  const s=document.getElementById('as-'+id),e=document.getElementById('ae-'+id);
-  if(s)s.value='';if(e)e.value='';
+  delete attSelected[id];
+  renderAttCards();
 }
 
 function saveAtt(){
-  const therapists=ld('therapists',[]);
-  const att=[];
-  for(const t of therapists){
-    const sEl=document.getElementById('as-'+t.id);
-    const eEl=document.getElementById('ae-'+t.id);
+  const therapists = ld('therapists',[]);
+  const att = [];
+  const ids = Object.keys(attSelected);
+  for(const idStr of ids){
+    const tid = parseInt(idStr);
+    const sEl = document.getElementById('as-'+tid);
+    const eEl = document.getElementById('ae-'+tid);
+    const aEl = document.getElementById('aa-'+tid);
     if(!sEl||!eEl)continue;
-    fmtTI(sEl);fmtTI(eEl);
-    const start=parseTI(sEl.value);
-    const end=parseTI(eEl.value);
+    fmtTI(sEl); fmtTI(eEl);
+    const start = parseTI(sEl.value);
+    const end = parseTI(eEl.value);
+    const t = therapists.find(x=>x.id===tid);
     if(!start&&!end)continue;
-    if(!start||!end){alert(t.name+': 開始・終了の両方を入力してください');return;}
-    att.push({therapistId:t.id,start,end});
+    if(!start||!end){alert((t?.name||idStr)+': 開始・終了の両方を入力してください');return;}
+    const areaId = aEl?.value ? parseInt(aEl.value) : null;
+    const areaName = areaId ? ld('areas',[]).find(a=>a.id===areaId)?.name||'' : '';
+    att.push({therapistId:tid, start, end, areaId, areaName});
   }
-  sv('attendance',att);
+  sv('attendance', att);
   closeM();
   spCalc();
   renderTherapists();
@@ -847,7 +877,8 @@ function renderTherapists(){
   const therapists=ld('therapists',[]);
   document.getElementById('thList').innerHTML=therapists.map(t=>{
     const a=att.find(x=>x.therapistId===t.id);
-    const attBadge=a?`<span class="tag t-att">${a.start}〜${a.end}</span>`:'';
+    const areaLabel=a?.areaName?` ${a.areaName}`:'';
+    const attBadge=a?`<span class="tag t-att">${a.start}〜${a.end}${areaLabel}</span>`:'';
     const tags=[
       t.rank?`<span class="prof-tag">ランク: <b>${t.rank}</b></span>`:'',
       t.face?`<span class="prof-tag">顔: <b>${t.face}</b></span>`:'',
@@ -949,6 +980,11 @@ function openM(name){
   document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
   document.getElementById('m-'+name).classList.remove('hidden');
   if(name==='att')openAtt();
+  if(name==='newArea'){
+    document.getElementById('areaModalTitle').textContent='エリア追加';
+    document.getElementById('area-id').value='';
+    document.getElementById('area-name').value='';
+  }
   if(name==='newTh'){
     document.getElementById('thModalTitle').textContent='セラピスト追加';
     ['th-id','th-name','th-face','th-body','th-caution','th-interval','th-nomfee','th-memo']
@@ -1346,9 +1382,39 @@ function saveBk(){
 
   const ext = parseInt(segGet('ext'))||0;
   const startM = tsToMins(start);
-  const end = minsToDisplay(startM + course + ext);
+  const endM = startM + course + ext;
+  const end = minsToDisplay(endM);
   const total = calcBkTotal()||0;
   const rawId = document.getElementById('bk-id').value;
+  const bkDate = document.getElementById('bk-date').value||getToday();
+
+  // ── 重複チェック ──
+  const therapist = ld('therapists',[]).find(t=>t.id===therapistId);
+  const interval = therapist?.interval||20;
+  const editId = rawId ? parseInt(rawId) : null;
+
+  const sameDayBks = ld('bookings',[]).filter(b=>
+    b.date===bkDate &&
+    b.therapistId===therapistId &&
+    b.status!=='cancel' &&
+    b.id!==editId
+  );
+
+  for(const bk of sameDayBks){
+    const bkStart = tsToMins(bk.start);
+    const bkCourse = bk.course||60;
+    const bkExt = parseInt(bk.ext)||0;
+    const bkEnd = bkStart + bkCourse + bkExt;
+    const bkNext = bkEnd + interval; // 次受付可能時間
+
+    // 新規: startM が bkStart〜bkNext の間に入る
+    // または 新規の終了がbkStartより後かつ開始がbkEndより前（既存予約に被る）
+    if(startM < bkNext && endM > bkStart){
+      const nextStr = minsToDisplay(bkNext);
+      alert(`${therapist?.name||''}さんは ${bk.start}〜${bk.end} に予約があります。\n次の受付可能時間は ${nextStr} 以降です。`);
+      return;
+    }
+  }
 
   const bkData = {
     date: document.getElementById('bk-date').value||getToday(),
@@ -1737,6 +1803,133 @@ function renderSales(){
     : '<div style="color:var(--tm);font-size:13px;padding:6px 0">データなし</div>';
 }
 
+// ── ATTENDANCE (new flow) ──
+let attSelected = {}; // {therapistId: {start, end, areaId, areaName}}
+
+function renderAttSearch(){
+  const q = document.getElementById('attSearch').value.trim().toLowerCase();
+  const suggest = document.getElementById('attSuggest');
+  if(!q){suggest.style.display='none';return;}
+  const therapists = ld('therapists',[]);
+  const matched = therapists.filter(t=>
+    t.name.toLowerCase().includes(q) && !attSelected[t.id]
+  ).slice(0,8);
+  if(!matched.length){suggest.style.display='none';return;}
+  suggest.innerHTML = matched.map(t=>
+    `<div onclick="attAdd(${t.id})" style="padding:9px 12px;cursor:pointer;font-size:13px;color:var(--tp);border-bottom:1px solid var(--bdr)"
+      onmouseover="this.style.background='var(--dark4)'" onmouseout="this.style.background=''">${t.name}</div>`
+  ).join('');
+  suggest.style.display='block';
+}
+
+function attAdd(therapistId){
+  if(attSelected[therapistId])return;
+  attSelected[therapistId] = {start:'', end:'', areaId:null, areaName:''};
+  document.getElementById('attSearch').value='';
+  document.getElementById('attSuggest').style.display='none';
+  renderAttCards();
+  // 追加したカードの出勤欄にフォーカス
+  setTimeout(()=>{
+    const el = document.getElementById('as-'+therapistId);
+    if(el) el.focus();
+  }, 50);
+}
+
+function renderAttCards(){
+  const therapists = ld('therapists',[]);
+  const areas = ld('areas',[]);
+  const areaOpts = '<option value="">エリア未設定</option>'+areas.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  const ids = Object.keys(attSelected);
+  document.getElementById('attCount').textContent = `出勤登録: ${ids.length}人`;
+  if(!ids.length){
+    document.getElementById('attRows').innerHTML =
+      '<div style="color:var(--tm);font-size:13px;padding:10px 0;text-align:center">セラピストを検索して追加してください</div>';
+    return;
+  }
+  document.getElementById('attRows').innerHTML = ids.map(idStr=>{
+    const tid = parseInt(idStr);
+    const t = therapists.find(x=>x.id===tid);
+    const name = t ? t.name : '不明';
+    const d = attSelected[tid];
+    return `<div style="background:var(--dark3);border-radius:var(--r);padding:9px 11px;margin-bottom:7px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+        <span style="font-size:13px;font-weight:500;color:var(--tp)">${name}</span>
+        <button class="btn btn-d btn-sm" onclick="clearAR(${tid})">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <div>
+          <div style="font-size:11px;color:var(--tm);margin-bottom:3px">出勤</div>
+          <input class="inp-sm" style="text-align:center;width:100%" id="as-${tid}"
+            placeholder="1000" value="${d.start||''}"
+            onblur="fmtTI(this)" onkeydown="if(event.key==='Enter'||event.key==='Tab')fmtTI(this)">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--tm);margin-bottom:3px">退勤</div>
+          <input class="inp-sm" style="text-align:center;width:100%" id="ae-${tid}"
+            placeholder="2200" value="${d.end||''}"
+            onblur="fmtTI(this)" onkeydown="if(event.key==='Enter'||event.key==='Tab')fmtTI(this)">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--tm);margin-bottom:3px">エリア</div>
+          <select class="inp-sm" id="aa-${tid}" style="width:100%">${areaOpts}</select>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  // エリア値を復元
+  ids.forEach(idStr=>{
+    const tid = parseInt(idStr);
+    const d = attSelected[tid];
+    const sel = document.getElementById('aa-'+tid);
+    if(sel && d.areaId) sel.value = String(d.areaId);
+  });
+}
+
+// ── AREA MANAGEMENT ──
+function renderAreaList(){
+  const areas=ld('areas',[]);
+  document.getElementById('areaList').innerHTML=areas.map((a,i)=>`
+    <div class="mgr-item">
+      <span class="mgr-label">${a.name}</span>
+      <div class="row" style="gap:6px">
+        <button class="btn btn-o btn-sm" onclick="openEditArea(${i})">編集</button>
+        <button class="btn btn-d btn-sm" onclick="deleteArea(${i})">削除</button>
+      </div>
+    </div>`).join('')||'<div style="color:var(--tm);font-size:13px">エリアが登録されていません</div>';
+}
+
+function openEditArea(idx){
+  const a=ld('areas',[])[idx];
+  document.getElementById('areaModalTitle').textContent='エリア編集';
+  document.getElementById('area-id').value=idx;
+  document.getElementById('area-name').value=a.name;
+  openM('newArea');
+}
+
+function saveArea(){
+  const idx=document.getElementById('area-id').value;
+  const name=document.getElementById('area-name').value.trim();
+  if(!name){alert('エリア名を入力してください');return;}
+  const areas=ld('areas',[]);
+  if(idx===''){
+    const newId=nid('area');
+    areas.push({id:newId,name});
+  } else {
+    areas[parseInt(idx)]={...areas[parseInt(idx)],name};
+  }
+  sv('areas',areas);
+  closeM();
+  renderAreaList();
+}
+
+function deleteArea(idx){
+  if(!confirm('削除しますか？'))return;
+  const areas=ld('areas',[]);
+  areas.splice(idx,1);
+  sv('areas',areas);
+  renderAreaList();
+}
+
 function showPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>{p.classList.add('hidden');p.classList.remove('active')});
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
@@ -1746,6 +1939,7 @@ function showPage(name,btn){
   if(name==='booking')renderBookingPage();
   if(name==='menuMgr')renderMenuMgr();
   if(name==='sales')renderSales();
+  if(name==='storeSetting')renderAreaList();
 }
 initData();
 </script>
