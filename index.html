@@ -213,39 +213,47 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
             <span style="font-size:11px;font-weight:500;color:var(--ts);letter-spacing:.4px">追加条件</span>
             <button onclick="spResetFilter()" style="background:none;border:none;color:var(--tm);font-size:11px;cursor:pointer;padding:0">リセット</button>
           </div>
-          <!-- エリア -->
-          <div style="margin-bottom:5px">
+          <!-- エリア（常時表示） -->
+          <div style="margin-bottom:6px">
             <div style="font-size:10px;color:var(--tm);margin-bottom:3px">エリア</div>
             <div class="seg-wrap seg-sm" id="spf-area" style="margin-bottom:0;gap:5px"></div>
           </div>
-          <!-- 顔タイプ -->
-          <div style="margin-bottom:5px">
-            <div style="font-size:10px;color:var(--tm);margin-bottom:3px">顔タイプ</div>
-            <div class="seg-wrap seg-sm" id="spf-face" style="margin-bottom:0;gap:5px">
-              <button class="seg-btn" data-val="かわいい" onclick="spToggleFilter('face','かわいい',this)">かわいい</button>
-              <button class="seg-btn" data-val="きれい" onclick="spToggleFilter('face','きれい',this)">きれい</button>
-              <button class="seg-btn" data-val="ギャル" onclick="spToggleFilter('face','ギャル',this)">ギャル</button>
-              <button class="seg-btn" data-val="清楚" onclick="spToggleFilter('face','清楚',this)">清楚</button>
-            </div>
-          </div>
-          <!-- スタイル -->
-          <div style="margin-bottom:5px">
-            <div style="font-size:10px;color:var(--tm);margin-bottom:3px">スタイル</div>
-            <div class="seg-wrap seg-sm" id="spf-body" style="margin-bottom:0;gap:5px">
-              <button class="seg-btn" data-val="ぽっちゃり" onclick="spToggleFilter('body','ぽっちゃり',this)">ぽっちゃり</button>
-              <button class="seg-btn" data-val="普通" onclick="spToggleFilter('body','普通',this)">普通</button>
-              <button class="seg-btn" data-val="スレンダー" onclick="spToggleFilter('body','スレンダー',this)">スレンダー</button>
-            </div>
-          </div>
-          <!-- 寛容度 -->
+          <!-- 詳細条件（トグル） -->
           <div>
-            <div style="font-size:10px;color:var(--tm);margin-bottom:3px">寛容度</div>
-            <div class="seg-wrap seg-sm" id="spf-kan" style="margin-bottom:0;gap:5px">
-              <button class="seg-btn" data-val="◎" onclick="spToggleFilter('kan','◎',this)">◎</button>
-              <button class="seg-btn" data-val="〇" onclick="spToggleFilter('kan','〇',this)">〇</button>
-              <button class="seg-btn" data-val="ー" onclick="spToggleFilter('kan','ー',this)">ー</button>
-              <button class="seg-btn" data-val="▲" onclick="spToggleFilter('kan','▲',this)">▲</button>
-              <button class="seg-btn" data-val="×" onclick="spToggleFilter('kan','×',this)">×</button>
+            <button onclick="toggleSpDetail()" id="spDetailToggle" style="background:none;border:none;color:var(--ts);font-size:11px;cursor:pointer;padding:0;display:flex;align-items:center;gap:4px">
+              <span id="spDetailArrow">▶</span> 詳細条件
+            </button>
+            <div id="spDetail" class="hidden" style="margin-top:7px">
+              <!-- 顔タイプ -->
+              <div style="margin-bottom:5px">
+                <div style="font-size:10px;color:var(--tm);margin-bottom:3px">顔タイプ</div>
+                <div class="seg-wrap seg-sm" id="spf-face" style="margin-bottom:0;gap:5px">
+                  <button class="seg-btn" data-val="かわいい" onclick="spToggleFilter('face','かわいい',this)">かわいい</button>
+                  <button class="seg-btn" data-val="きれい" onclick="spToggleFilter('face','きれい',this)">きれい</button>
+                  <button class="seg-btn" data-val="ギャル" onclick="spToggleFilter('face','ギャル',this)">ギャル</button>
+                  <button class="seg-btn" data-val="清楚" onclick="spToggleFilter('face','清楚',this)">清楚</button>
+                </div>
+              </div>
+              <!-- スタイル -->
+              <div style="margin-bottom:5px">
+                <div style="font-size:10px;color:var(--tm);margin-bottom:3px">スタイル</div>
+                <div class="seg-wrap seg-sm" id="spf-body" style="margin-bottom:0;gap:5px">
+                  <button class="seg-btn" data-val="ぽっちゃり" onclick="spToggleFilter('body','ぽっちゃり',this)">ぽっちゃり</button>
+                  <button class="seg-btn" data-val="普通" onclick="spToggleFilter('body','普通',this)">普通</button>
+                  <button class="seg-btn" data-val="スレンダー" onclick="spToggleFilter('body','スレンダー',this)">スレンダー</button>
+                </div>
+              </div>
+              <!-- 寛容度 -->
+              <div>
+                <div style="font-size:10px;color:var(--tm);margin-bottom:3px">寛容度</div>
+                <div class="seg-wrap seg-sm" id="spf-kan" style="margin-bottom:0;gap:5px">
+                  <button class="seg-btn" data-val="◎" onclick="spToggleFilter('kan','◎',this)">◎</button>
+                  <button class="seg-btn" data-val="〇" onclick="spToggleFilter('kan','〇',this)">〇</button>
+                  <button class="seg-btn" data-val="ー" onclick="spToggleFilter('kan','ー',this)">ー</button>
+                  <button class="seg-btn" data-val="▲" onclick="spToggleFilter('kan','▲',this)">▲</button>
+                  <button class="seg-btn" data-val="×" onclick="spToggleFilter('kan','×',this)">×</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -682,12 +690,26 @@ function spToggleFilter(key, val, el){
   spCalc();
 }
 
+function toggleSpDetail(){
+  const detail = document.getElementById('spDetail');
+  const arrow = document.getElementById('spDetailArrow');
+  if(!detail)return;
+  const hidden = detail.classList.contains('hidden');
+  detail.classList.toggle('hidden', !hidden);
+  if(arrow) arrow.textContent = hidden ? '▼' : '▶';
+}
+
 function spResetFilter(){
   ['area','face','body','kan'].forEach(k=>{
     spFilter[k]=null;
     const wrap=document.getElementById('spf-'+k);
     if(wrap) wrap.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
   });
+  // 詳細条件を閉じる
+  const detail=document.getElementById('spDetail');
+  const arrow=document.getElementById('spDetailArrow');
+  if(detail) detail.classList.add('hidden');
+  if(arrow) arrow.textContent='▶';
   spCalc();
 }
 
