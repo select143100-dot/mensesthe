@@ -858,13 +858,27 @@ function mxTxt(mx){
 
 function sanName(name){
   if(!name)return 'さん';
-  const s=name.trim();
+  // スペース（半角・全角）で分割して最初のトークンのみ対象
+  const s=name.trim().split(/[\s\u3000]/)[0];
   const isK=c=>{const code=c.charCodeAt(0);return(code>=0x4E00&&code<=0x9FFF)||code===0x3005;};
   const isH=c=>{const code=c.charCodeAt(0);return code>=0x3040&&code<=0x309F;};
-  if(!s.length||!isK(s[0]))return s.split(' ')[0]+'さん';
+  if(!s.length||!isK(s[0]))return s+'さん';
   let last=-1;
   for(let i=0;i<s.length;i++){if(isK(s[i]))last=i;else if(isH(s[i]))break;}
-  return(last>=0?s.slice(0,last+1):s.split(' ')[0])+'さん';
+  return(last>=0?s.slice(0,last+1):s)+'さん';
+}
+
+function padName(text, width){
+  if(!text)text='';
+  let w=0;
+  for(const c of text){
+    const code=c.charCodeAt(0);
+    if(code<=0x007F) w+=0.5;
+    else if('ノ々ヶヵー〻'.indexOf(c)>=0) w+=0.85;
+    else w+=1.0;
+  }
+  const padCount=Math.max(0,width-Math.ceil(w));
+  return text+'　'.repeat(padCount);
 }
 
 function spCalc(){
@@ -901,7 +915,7 @@ function spCalc(){
   // SNSテキスト（ヘッダー・フッター付き）
   const fmt = ld('snsFormat',{header:'',footer:''});
   const lines=cands.filter(c=>c.mx>0).map(c=>{
-    return `${sanName(c.name)}　${minsToDisplay(c.start)}～`;
+    return `${padName(sanName(c.name),6)}${minsToDisplay(c.start)}～`;
   });
   const parts=[];
   if(fmt.header) parts.push(fmt.header);
