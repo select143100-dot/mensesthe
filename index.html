@@ -825,7 +825,10 @@ function buildAreaFilterBtns(){
 
 function spNow(){
   const mins=nowBusinessMins();
-  document.getElementById('spTime').value=minsToDisplay(mins);
+  // 5分刻みに切り上げ（13:03→13:05、13:00→13:00）
+  const ceiled = Math.ceil(mins/5)*5;
+  document.getElementById('spTime').value=minsToDisplay(ceiled);
+  spCalc();
 }
 
 function parseSpTime(str){
