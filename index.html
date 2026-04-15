@@ -190,6 +190,7 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
     <button class="nb" onclick="showPage('therapist',this)">セラピスト一覧</button>
     <button class="nb" onclick="showPage('menuMgr',this)">メニュー管理</button>
     <button class="nb" onclick="showPage('sales',this)">売上</button>
+    <button class="nb" onclick="showPage('storeSetting',this)">店舗設定</button>
   </div>
   <div class="content">
 
@@ -204,7 +205,6 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
           <input class="sp-tinp" id="spTime" placeholder="1000" onblur="fmtTI(this);spCalc()" onkeydown="if(event.key==='Enter'){fmtTI(this);spCalc();}">
           <button class="sp-btn" onclick="spNow()">現在時刻</button>
           <button class="sp-btn-gold" onclick="spCalc()">再計算</button>
-          <button class="btn btn-o btn-sm" onclick="openM('att')" style="margin-left:auto">出勤登録</button>
         </div>
         <table class="sp-tbl">
           <thead>
@@ -220,6 +220,7 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
           <button class="sp-copy" onclick="spCopy()">コピー</button>
         </div>
       </div>
+      <button class="btn btn-o btn-sm" onclick="openM('att')" style="margin-top:8px;width:100%">出勤登録</button>
     </div>
 
     <!-- BOOKING PAGE -->
@@ -352,6 +353,15 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
 
     </div>
 
+  <!-- 店舗設定 -->
+    <div class="page hidden" id="page-storeSetting">
+      <div class="rb" style="margin-bottom:14px">
+        <span class="sec" style="margin:0">エリア管理</span>
+        <button class="btn btn-g btn-sm" onclick="openM('newArea')">＋ 追加</button>
+      </div>
+      <div id="areaList"></div>
+    </div>
+
   </div>
 </div>
 
@@ -379,11 +389,29 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
   <!-- 出勤登録 -->
   <div class="modal hidden" id="m-att">
     <div class="mt">出勤登録</div>
-    <div style="font-size:12px;color:var(--ts);margin-bottom:12px">出勤セラピストの勤務時間を入力（空欄＝非出勤）<br>4桁入力で自動変換（例: 1000 → 10:00）</div>
+    <div style="font-size:12px;color:var(--ts);margin-bottom:12px">4桁入力で自動変換（例: 1000 → 10:00）　空欄＝非出勤</div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+      <div style="font-size:11px;color:var(--tm)">セラピスト</div>
+      <div style="font-size:11px;color:var(--tm)">出勤</div>
+      <div style="font-size:11px;color:var(--tm)">退勤</div>
+      <div style="font-size:11px;color:var(--tm)">エリア</div>
+    </div>
     <div id="attRows"></div>
     <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px">
       <button class="btn btn-o" onclick="closeM()">キャンセル</button>
       <button class="btn btn-g" onclick="saveAtt()">登録</button>
+    </div>
+  </div>
+
+  <!-- エリア追加 -->
+  <div class="modal hidden" id="m-newArea">
+    <div class="mt" id="areaModalTitle">エリア追加</div>
+    <input type="hidden" id="area-id">
+    <label class="lbl">エリア名</label>
+    <input class="inp" id="area-name" placeholder="例: 柏">
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:8px">
+      <button class="btn btn-o" onclick="closeM()">キャンセル</button>
+      <button class="btn btn-g" onclick="saveArea()">保存</button>
     </div>
   </div>
 
@@ -510,7 +538,11 @@ function initData(){
     {label:'5000円引', price:5000},
   ]);
   sv('bookings',[]);
-  sv('nid',{th:10,bk:100});
+  sv('areas',[
+    {id:1, name:'柏'},
+    {id:2, name:'船橋'},
+  ]);
+  sv('nid',{th:10,bk:100,area:10});
   sv('init',true);
 }
 
@@ -621,8 +653,8 @@ function computeShortest(baseMins){
     const tBks=bookings
       .filter(b=>b.therapistId===t.id)
       .map(b=>{
-        const menu=ld('menus',[]).find(m=>m.id===b.menuId);
-        const dur=menu?menu.time:60;
+        const menu=ld('menuCourse',[]).find(m=>m.mins===b.course);
+        const dur=(menu?menu.mins:b.course||60)+(parseInt(b.ext)||0);
         const st=tsToMins(b.start);
         return{start:st,end:st+dur};
       })
@@ -798,27 +830,34 @@ function parseTI(raw){
 function openAtt(){
   const therapists=ld('therapists',[]);
   const att=ld('attendance',[]);
+  const areas=ld('areas',[]);
+  const areaOpts='<option value="">-</option>'+areas.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
   document.getElementById('attRows').innerHTML=therapists.map(t=>{
     const a=att.find(x=>x.therapistId===t.id);
-    return `<div class="att-row">
-      <span class="att-nm">${t.name}</span>
-      <input class="inp-sm" style="width:74px;text-align:center" id="as-${t.id}"
+    return `<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:5px;margin-bottom:7px;align-items:center">
+      <span style="font-size:13px;font-weight:500;color:var(--tp);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name}</span>
+      <input class="inp-sm" style="text-align:center;padding:5px 4px" id="as-${t.id}"
         placeholder="1000" value="${a?.start||''}"
         onblur="fmtTI(this)"
         onkeydown="if(event.key==='Enter'||event.key==='Tab')fmtTI(this)">
-      <span style="color:var(--tm);font-size:14px">〜</span>
-      <input class="inp-sm" style="width:74px;text-align:center" id="ae-${t.id}"
+      <input class="inp-sm" style="text-align:center;padding:5px 4px" id="ae-${t.id}"
         placeholder="2200" value="${a?.end||''}"
         onblur="fmtTI(this)"
         onkeydown="if(event.key==='Enter'||event.key==='Tab')fmtTI(this)">
-      <button class="btn btn-d btn-sm" onclick="clearAR(${t.id})">クリア</button>
+      <select class="inp-sm" id="aa-${t.id}" style="padding:5px 2px">${areaOpts}</select>
     </div>`;
   }).join('')||'<div style="color:var(--tm);font-size:13px">セラピストが登録されていません</div>';
+  // 既存エリア値を復元
+  therapists.forEach(t=>{
+    const a=att.find(x=>x.therapistId===t.id);
+    const sel=document.getElementById('aa-'+t.id);
+    if(sel&&a?.areaId)sel.value=String(a.areaId);
+  });
 }
 
 function clearAR(id){
-  const s=document.getElementById('as-'+id),e=document.getElementById('ae-'+id);
-  if(s)s.value='';if(e)e.value='';
+  const s=document.getElementById('as-'+id),e=document.getElementById('ae-'+id),a=document.getElementById('aa-'+id);
+  if(s)s.value='';if(e)e.value='';if(a)a.value='';
 }
 
 function saveAtt(){
@@ -827,13 +866,16 @@ function saveAtt(){
   for(const t of therapists){
     const sEl=document.getElementById('as-'+t.id);
     const eEl=document.getElementById('ae-'+t.id);
+    const aEl=document.getElementById('aa-'+t.id);
     if(!sEl||!eEl)continue;
     fmtTI(sEl);fmtTI(eEl);
     const start=parseTI(sEl.value);
     const end=parseTI(eEl.value);
     if(!start&&!end)continue;
     if(!start||!end){alert(t.name+': 開始・終了の両方を入力してください');return;}
-    att.push({therapistId:t.id,start,end});
+    const areaId=aEl?.value?parseInt(aEl.value):null;
+    const areaName=areaId?ld('areas',[]).find(a=>a.id===areaId)?.name||'':'';
+    att.push({therapistId:t.id,start,end,areaId,areaName});
   }
   sv('attendance',att);
   closeM();
@@ -847,7 +889,8 @@ function renderTherapists(){
   const therapists=ld('therapists',[]);
   document.getElementById('thList').innerHTML=therapists.map(t=>{
     const a=att.find(x=>x.therapistId===t.id);
-    const attBadge=a?`<span class="tag t-att">${a.start}〜${a.end}</span>`:'';
+    const areaLabel=a?.areaName?` ${a.areaName}`:'';
+    const attBadge=a?`<span class="tag t-att">${a.start}〜${a.end}${areaLabel}</span>`:'';
     const tags=[
       t.rank?`<span class="prof-tag">ランク: <b>${t.rank}</b></span>`:'',
       t.face?`<span class="prof-tag">顔: <b>${t.face}</b></span>`:'',
@@ -949,6 +992,11 @@ function openM(name){
   document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
   document.getElementById('m-'+name).classList.remove('hidden');
   if(name==='att')openAtt();
+  if(name==='newArea'){
+    document.getElementById('areaModalTitle').textContent='エリア追加';
+    document.getElementById('area-id').value='';
+    document.getElementById('area-name').value='';
+  }
   if(name==='newTh'){
     document.getElementById('thModalTitle').textContent='セラピスト追加';
     ['th-id','th-name','th-face','th-body','th-caution','th-interval','th-nomfee','th-memo']
@@ -1737,6 +1785,51 @@ function renderSales(){
     : '<div style="color:var(--tm);font-size:13px;padding:6px 0">データなし</div>';
 }
 
+// ── AREA MANAGEMENT ──
+function renderAreaList(){
+  const areas=ld('areas',[]);
+  document.getElementById('areaList').innerHTML=areas.map((a,i)=>`
+    <div class="mgr-item">
+      <span class="mgr-label">${a.name}</span>
+      <div class="row" style="gap:6px">
+        <button class="btn btn-o btn-sm" onclick="openEditArea(${i})">編集</button>
+        <button class="btn btn-d btn-sm" onclick="deleteArea(${i})">削除</button>
+      </div>
+    </div>`).join('')||'<div style="color:var(--tm);font-size:13px">エリアが登録されていません</div>';
+}
+
+function openEditArea(idx){
+  const a=ld('areas',[])[idx];
+  document.getElementById('areaModalTitle').textContent='エリア編集';
+  document.getElementById('area-id').value=idx;
+  document.getElementById('area-name').value=a.name;
+  openM('newArea');
+}
+
+function saveArea(){
+  const idx=document.getElementById('area-id').value;
+  const name=document.getElementById('area-name').value.trim();
+  if(!name){alert('エリア名を入力してください');return;}
+  const areas=ld('areas',[]);
+  if(idx===''){
+    const newId=nid('area');
+    areas.push({id:newId,name});
+  } else {
+    areas[parseInt(idx)]={...areas[parseInt(idx)],name};
+  }
+  sv('areas',areas);
+  closeM();
+  renderAreaList();
+}
+
+function deleteArea(idx){
+  if(!confirm('削除しますか？'))return;
+  const areas=ld('areas',[]);
+  areas.splice(idx,1);
+  sv('areas',areas);
+  renderAreaList();
+}
+
 function showPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>{p.classList.add('hidden');p.classList.remove('active')});
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
@@ -1746,6 +1839,7 @@ function showPage(name,btn){
   if(name==='booking')renderBookingPage();
   if(name==='menuMgr')renderMenuMgr();
   if(name==='sales')renderSales();
+  if(name==='storeSetting')renderAreaList();
 }
 initData();
 </script>
