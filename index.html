@@ -83,6 +83,8 @@ select.inp option{background:var(--dark3);color:var(--tp)}
 .sp-st{color:var(--gold-l);font-weight:600}
 .sp-mx{color:var(--ts);font-size:12px}
 .sp-closed td{opacity:.4}
+.sp-row-tap:hover td{background:rgba(184,150,74,.08)}
+.sp-row-tap:active td{background:rgba(184,150,74,.15)}
 .sp-empty{color:var(--tm);font-size:12px;padding:10px 0;text-align:center}
 .sp-sns-wrap{margin-top:12px;border-top:1px solid var(--bdr);padding-top:10px}
 .sp-sns-lbl{font-size:11px;color:var(--tm);margin-bottom:5px}
@@ -112,6 +114,47 @@ select.inp option{background:var(--dark3);color:var(--tp)}
 .mt{font-size:15px;font-weight:600;color:var(--gold);margin-bottom:14px}
 .hidden{display:none!important}
 .badge{background:var(--gold);color:#1A1A1A;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:600;margin-left:4px}
+.kpi-card{background:var(--dark2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px;text-align:center}
+.kpi-val{font-size:22px;font-weight:600;color:var(--gold)}
+.kpi-lbl{font-size:11px;color:var(--tm);margin-top:3px}
+.sales-sec{font-size:12px;font-weight:500;color:var(--gold);margin:12px 0 7px;letter-spacing:.4px}
+.sales-row-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.sales-chip{background:var(--dark3);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 12px;font-size:13px;display:flex;align-items:center;gap:6px}
+.sales-chip-lbl{color:var(--ts);font-size:12px}
+.sales-chip-val{color:var(--tp);font-weight:600}
+.sales-chip-gold{color:var(--gold);font-weight:600}
+.sales-single{font-size:15px;font-weight:600;color:var(--tp);padding:4px 0 6px}
+.sales-staff-item{background:var(--dark2);border:1px solid var(--bdr);border-radius:var(--r);padding:9px 12px;margin-bottom:7px;display:flex;align-items:center;gap:8px}
+.sales-staff-name{font-size:13px;font-weight:500;flex:1}
+.sales-staff-cnt{font-size:18px;font-weight:600;color:var(--gold);min-width:36px;text-align:right}
+.sales-staff-sub{font-size:11px;color:var(--tm)}
+.bk-lbl{font-size:11px;color:var(--ts);margin-bottom:2px}
+.bk-inp{width:100%;background:var(--dark3);border:1px solid var(--bdr);color:var(--tp);padding:6px 8px;border-radius:var(--r);font-size:13px;margin-bottom:0}
+.bk-inp:focus{outline:none;border-color:var(--gold)}
+.bk-inp::placeholder{color:var(--tm)}
+select.bk-inp option{background:var(--dark3);color:var(--tp)}
+.bk-disp{background:var(--dark3);border:1px solid var(--bdr);border-radius:var(--r);padding:6px 8px;font-size:13px;font-weight:600;color:var(--gold-l)}
+.mgr-list{margin-bottom:4px}
+.mgr-item{background:var(--dark2);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 13px;margin-bottom:7px;display:flex;align-items:center;gap:8px}
+.mgr-label{font-size:14px;font-weight:500;flex:1}
+.mgr-price{font-size:13px;color:var(--gold-l);font-weight:600;min-width:70px;text-align:right}
+.mgr-note{font-size:11px;color:var(--tm);margin-left:4px}
+.pay-btn{flex:1;padding:9px;border-radius:var(--r);border:1px solid var(--bdr);background:var(--dark3);color:var(--ts);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.pay-btn.active{background:var(--gold);color:#1A1A1A;border-color:var(--gold)}
+.bk-card{background:var(--dark2);border:1px solid var(--bdr);border-radius:var(--r);padding:11px 13px;margin-bottom:9px;cursor:pointer;transition:border-color .15s}
+.bk-card:hover{border-color:var(--gold-d)}
+.bk-row1{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.bk-time{font-size:15px;font-weight:600;color:var(--gold-l)}
+.bk-name{font-size:14px;font-weight:500}
+.bk-row2{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--ts)}
+.bk-tag{background:var(--dark3);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--ts)}
+.filter-btn{padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--bdr);color:var(--ts);background:none;transition:all .15s}
+.filter-btn.active{background:var(--gold);color:#1A1A1A;border-color:var(--gold)}
+.seg-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.seg-btn{flex:1;min-width:0;padding:8px 4px;border-radius:var(--r);border:1px solid var(--bdr);background:var(--dark3);color:var(--ts);font-size:13px;font-weight:500;cursor:pointer;text-align:center;transition:all .15s;white-space:nowrap}
+.seg-btn.active{background:var(--gold);color:#1A1A1A;border-color:var(--gold)}
+.seg-btn:hover:not(.active){border-color:var(--ts);color:var(--tp)}
+.seg-sm .seg-btn{padding:6px 4px;font-size:12px}
 </style>
 </head>
 <body>
@@ -143,7 +186,10 @@ select.inp option{background:var(--dark3);color:var(--tp)}
   </div>
   <div class="nav">
     <button class="nb active" onclick="showPage('dash',this)">ダッシュボード</button>
+    <button class="nb" onclick="showPage('booking',this)">予約管理<span class="badge" id="bkBadge">0</span></button>
     <button class="nb" onclick="showPage('therapist',this)">セラピスト一覧</button>
+    <button class="nb" onclick="showPage('menuMgr',this)">メニュー管理</button>
+    <button class="nb" onclick="showPage('sales',this)">売上</button>
   </div>
   <div class="content">
 
@@ -155,7 +201,7 @@ select.inp option{background:var(--dark3);color:var(--tp)}
       <div class="sp-panel">
         <div class="sp-hdr">
           <span class="sp-title">最短取得</span>
-          <input class="sp-tinp" id="spTime" placeholder="HH:MM">
+          <input class="sp-tinp" id="spTime" placeholder="1000" onblur="fmtTI(this);spCalc()" onkeydown="if(event.key==='Enter'){fmtTI(this);spCalc();}">
           <button class="sp-btn" onclick="spNow()">現在時刻</button>
           <button class="sp-btn-gold" onclick="spCalc()">再計算</button>
           <button class="btn btn-o btn-sm" onclick="openM('att')" style="margin-left:auto">出勤登録</button>
@@ -176,6 +222,27 @@ select.inp option{background:var(--dark3);color:var(--tp)}
       </div>
     </div>
 
+    <!-- BOOKING PAGE -->
+    <div class="page hidden" id="page-booking">
+      <div class="rb" style="margin-bottom:12px">
+        <div class="row" style="gap:6px">
+          <input type="date" id="bkDateFilter" class="inp-sm" style="width:auto" onchange="renderBookingPage()">
+          <span id="bkDateYoubi" style="font-size:13px;color:var(--ts);font-weight:500"></span>
+        </div>
+        <button class="btn btn-g btn-sm" onclick="openNewBk()">＋ 予約追加</button>
+      </div>
+      <!-- 絞り込み行 -->
+      <div class="row" style="gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <select class="inp-sm" id="thFilterBtns" style="flex:1;min-width:100px" onchange="setBkFilter(this.value)"></select>
+        <select class="inp-sm" id="statusFilter" style="flex:1;min-width:100px" onchange="renderBookingPage()">
+          <option value="active">成約</option>
+          <option value="cancel">キャンセル</option>
+          <option value="all">全件</option>
+        </select>
+      </div>
+      <div id="bkList"></div>
+    </div>
+
     <!-- THERAPIST LIST -->
     <div class="page hidden" id="page-therapist">
       <div class="rb" style="margin-bottom:14px">
@@ -185,11 +252,129 @@ select.inp option{background:var(--dark3);color:var(--tp)}
       <div id="thList"></div>
     </div>
 
+  <!-- MENU MANAGER PAGE -->
+    <div class="page hidden" id="page-menuMgr">
+      <div class="sec" style="margin-bottom:14px">メニュー管理</div>
+
+      <!-- コース -->
+      <div class="rb" style="margin-bottom:8px">
+        <span style="font-size:13px;font-weight:500;color:var(--tp)">コース</span>
+        <button class="btn btn-g btn-sm" onclick="openMenuItemModal('course')">＋ 追加</button>
+      </div>
+      <div id="mgr-course" class="mgr-list"></div>
+
+      <div class="divider"></div>
+
+      <!-- 延長 -->
+      <div class="rb" style="margin-bottom:8px">
+        <span style="font-size:13px;font-weight:500;color:var(--tp)">延長</span>
+        <button class="btn btn-g btn-sm" onclick="openMenuItemModal('ext')">＋ 追加</button>
+      </div>
+      <div id="mgr-ext" class="mgr-list"></div>
+
+      <div class="divider"></div>
+
+      <!-- OP -->
+      <div class="rb" style="margin-bottom:8px">
+        <span style="font-size:13px;font-weight:500;color:var(--tp)">OP</span>
+        <button class="btn btn-g btn-sm" onclick="openMenuItemModal('op')">＋ 追加</button>
+      </div>
+      <div id="mgr-op" class="mgr-list"></div>
+
+      <div class="divider"></div>
+
+      <!-- 指名料 -->
+      <div class="rb" style="margin-bottom:8px">
+        <span style="font-size:13px;font-weight:500;color:var(--tp)">指名料</span>
+        <span style="font-size:11px;color:var(--tm)">本指名はセラピスト管理で設定</span>
+      </div>
+      <div id="mgr-nom" class="mgr-list"></div>
+
+      <div class="divider"></div>
+
+      <!-- 割引 -->
+      <div class="rb" style="margin-bottom:8px">
+        <span style="font-size:13px;font-weight:500;color:var(--tp)">割引</span>
+        <button class="btn btn-g btn-sm" onclick="openMenuItemModal('disc')">＋ 追加</button>
+      </div>
+      <div id="mgr-disc" class="mgr-list"></div>
+
+    </div>
+
+  <!-- SALES PAGE -->
+    <div class="page hidden" id="page-sales">
+
+      <!-- 日付選択 -->
+      <div class="rb" style="margin-bottom:14px">
+        <div class="row" style="gap:8px">
+          <input type="date" id="salesDate" class="inp-sm" style="width:auto" onchange="renderSales()">
+          <span id="salesDayLabel" style="font-size:13px;color:var(--ts);font-weight:500"></span>
+        </div>
+        <button class="btn btn-o btn-sm" onclick="document.getElementById('salesDate').value=getToday();renderSales()">今日</button>
+      </div>
+
+      <!-- KPIカード -->
+      <div class="g2" style="gap:8px;margin-bottom:14px">
+        <div class="kpi-card"><div class="kpi-val" id="s-sales">¥0</div><div class="kpi-lbl">売上</div></div>
+        <div class="kpi-card"><div class="kpi-val" id="s-visits">0</div><div class="kpi-lbl">来店数</div></div>
+      </div>
+
+      <!-- 顧客属性別来店 -->
+      <div class="sales-sec">来店数（顧客属性別）</div>
+      <div class="sales-row-wrap" id="s-attr"></div>
+
+      <!-- 指名種別 -->
+      <div class="sales-sec">指名数（種別）</div>
+      <div class="sales-row-wrap" id="s-nom"></div>
+
+      <!-- コース別 -->
+      <div class="sales-sec">コース別本数</div>
+      <div class="sales-row-wrap" id="s-course"></div>
+
+      <!-- 延長 -->
+      <div class="sales-sec">延長本数</div>
+      <div class="sales-row-wrap" id="s-ext"></div>
+
+      <!-- OP -->
+      <div class="sales-sec">OP（有）件数</div>
+      <div class="sales-single" id="s-op"></div>
+
+      <div class="divider"></div>
+
+      <!-- 内勤別成約 -->
+      <div class="sales-sec">内勤別 成約本数</div>
+      <div id="s-staff"></div>
+
+      <!-- ログボタン -->
+      <button class="btn btn-o" style="width:100%;margin-top:8px;opacity:.5;cursor:not-allowed" disabled>
+        ログ表示（準備中）
+      </button>
+
+    </div>
+
   </div>
 </div>
 
 <!-- MODALS -->
 <div class="ov hidden" id="ov" onclick="closeOv(event)">
+
+  <!-- 予約追加・編集 -->
+
+
+  <!-- メニュー項目追加・編集 -->
+  <div class="modal hidden" id="m-menuItem">
+    <div class="mt" id="menuItemTitle">項目追加</div>
+    <input type="hidden" id="mi-type">
+    <input type="hidden" id="mi-idx">
+    <label class="lbl" id="mi-label1">名称・分数</label>
+    <input class="inp" id="mi-label" placeholder="例: 60分">
+    <label class="lbl">料金（円）</label>
+    <input type="number" class="inp" id="mi-price" placeholder="15000">
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:8px">
+      <button class="btn btn-o" onclick="closeM()">キャンセル</button>
+      <button class="btn btn-g" onclick="saveMenuItem()">保存</button>
+    </div>
+  </div>
 
   <!-- 出勤登録 -->
   <div class="modal hidden" id="m-att">
@@ -206,22 +391,54 @@ select.inp option{background:var(--dark3);color:var(--tp)}
   <div class="modal hidden" id="m-newTh">
     <div class="mt" id="thModalTitle">セラピスト追加</div>
     <input type="hidden" id="th-id">
-    <div class="g2">
-      <div><label class="lbl">氏名</label><input class="inp" id="th-name" placeholder="田中 花子"></div>
-      <div><label class="lbl">ポジション</label><input class="inp" id="th-pos" placeholder="セラピスト"></div>
-    </div>
+    <label class="lbl">氏名</label>
+    <input class="inp" id="th-name" placeholder="田中 花子">
+    <label class="lbl">ランク</label>
+    <select class="inp" id="th-rank">
+      <option value="">-- 選択 --</option>
+      <option value="ASK">ASK</option>
+      <option value="ゴールド">ゴールド</option>
+      <option value="ノーマル">ノーマル</option>
+    </select>
     <div class="divider"></div>
     <div style="font-size:12px;color:var(--gold);font-weight:500;margin-bottom:10px">プロフィール</div>
     <div class="g2">
-      <div><label class="lbl">顔タイプ</label><input class="inp" id="th-face" placeholder="かわいい系"></div>
-      <div><label class="lbl">スタイル</label><input class="inp" id="th-body" placeholder="スレンダー"></div>
+      <div>
+        <label class="lbl">顔タイプ</label>
+        <select class="inp" id="th-face">
+          <option value="">-- 選択 --</option>
+          <option value="かわいい">かわいい</option>
+          <option value="きれい">きれい</option>
+          <option value="ギャル">ギャル</option>
+          <option value="清楚">清楚</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">スタイル</label>
+        <select class="inp" id="th-body">
+          <option value="">-- 選択 --</option>
+          <option value="ぽっちゃり">ぽっちゃり</option>
+          <option value="普通">普通</option>
+          <option value="スレンダー">スレンダー</option>
+        </select>
+      </div>
     </div>
     <div class="g2">
-      <div><label class="lbl">感度</label><input class="inp" id="th-kan" placeholder="敏感"></div>
+      <div>
+        <label class="lbl">寛容度</label>
+        <select class="inp" id="th-kan">
+          <option value="">-- 選択 --</option>
+          <option value="◎">◎</option>
+          <option value="〇">〇</option>
+          <option value="ー">ー</option>
+          <option value="▲">▲</option>
+          <option value="×">×</option>
+        </select>
+      </div>
       <div><label class="lbl">注意事項</label><input class="inp" id="th-caution" placeholder="施術禁止箇所等"></div>
     </div>
     <div class="g2">
-      <div><label class="lbl">インターバル（分）</label><input type="number" class="inp" id="th-interval" placeholder="20"></div>
+      <div><label class="lbl">インターバル（分）</label><input class="inp" id="th-interval" placeholder="0020" onblur="fmtTI(this)"></div>
       <div><label class="lbl">指名料（円）</label><input type="number" class="inp" id="th-nomfee" placeholder="1000"></div>
     </div>
     <label class="lbl">メモ</label>
@@ -249,21 +466,63 @@ function initData(){
     {id:'adm1',username:'admin',password:'admin123',role:'admin',display:'管理者'},
   ]);
   sv('therapists',[
-    {id:1,name:'田中 彩',pos:'セラピスト',face:'かわいい系',body:'スレンダー',kan:'敏感',caution:'',interval:20,nomFee:1000,memo:''},
-    {id:2,name:'田村 麻衣',pos:'セラピスト',face:'清楚系',body:'グラマー',kan:'普通',caution:'',interval:20,nomFee:1000,memo:''},
-    {id:3,name:'中村 葵',pos:'セラピスト',face:'綺麗系',body:'スレンダー',kan:'強め',caution:'',interval:20,nomFee:2000,memo:'人気No.1'},
+    {id:1,name:'田中 彩',rank:'ノーマル',face:'かわいい',body:'スレンダー',kan:'◎',caution:'',interval:20,nomFee:1000,memo:''},
+    {id:2,name:'田村 麻衣',rank:'ノーマル',face:'清楚',body:'普通',kan:'〇',caution:'',interval:20,nomFee:1000,memo:''},
+    {id:3,name:'中村 葵',rank:'ゴールド',face:'きれい',body:'スレンダー',kan:'◎',caution:'',interval:20,nomFee:2000,memo:'人気No.1'},
   ]);
   sv('attendance',[
     {therapistId:1,start:'10:00',end:'22:00'},
     {therapistId:2,start:'12:00',end:'22:00'},
     {therapistId:3,start:'10:00',end:'23:00'},
   ]);
-  sv('nid',{th:10});
+  sv('menuCourse',[
+    {label:'60分', mins:60, price:15000},
+    {label:'80分', mins:80, price:20000},
+    {label:'100分', mins:100, price:25000},
+    {label:'120分', mins:120, price:30000},
+  ]);
+  sv('menuExt',[
+    {label:'20分', mins:20, price:5000},
+    {label:'40分', mins:40, price:10000},
+    {label:'60分', mins:60, price:15000},
+    {label:'80分', mins:80, price:20000},
+    {label:'100分', mins:100, price:25000},
+    {label:'120分', mins:120, price:30000},
+    {label:'140分', mins:140, price:35000},
+    {label:'160分', mins:160, price:40000},
+    {label:'180分', mins:180, price:45000},
+    {label:'200分', mins:200, price:50000},
+  ]);
+  sv('menuOp',[
+    {label:'有', price:5000},
+    {label:'無', price:0},
+  ]);
+  sv('menuNom',[
+    {label:'F', price:0},
+    {label:'写', price:0},
+    {label:'姫', price:0},
+    {label:'本', price:null}, // セラピスト紐づき
+  ]);
+  sv('menuDisc',[
+    {label:'1000円引', price:1000},
+    {label:'2000円引', price:2000},
+    {label:'3000円引', price:3000},
+    {label:'5000円引', price:5000},
+  ]);
+  sv('bookings',[]);
+  sv('nid',{th:10,bk:100});
   sv('init',true);
 }
 
-function nid(t){const ids=ld('nid',{th:10});const id=(ids[t]||10)+1;ids[t]=id;sv('nid',ids);return id;}
-function getToday(){return new Date().toISOString().slice(0,10);}
+function nid(t){const ids=ld('nid',{th:10,bk:100});const id=(ids[t]||10)+1;ids[t]=id;sv('nid',ids);return id;}
+function getToday(){
+  // 営業日ベース: 0:00〜6:59は前日扱い（日付変更線=7:00）
+  const now = new Date();
+  if(now.getHours() < 7) now.setDate(now.getDate() - 1);
+  return now.getFullYear()+'-'
+    +String(now.getMonth()+1).padStart(2,'0')+'-'
+    +String(now.getDate()).padStart(2,'0');
+}
 function fp(n){return '¥'+Number(n).toLocaleString();}
 
 // ── AUTH ──
@@ -275,7 +534,6 @@ function doLogin(){
   CUR=acc;
   document.getElementById('screen-login').classList.add('hidden');
   const sm=document.getElementById('screen-main');sm.classList.remove('hidden');sm.style.display='flex';
-  initData();
   applyRole();
   renderAll();
   spNow();
@@ -323,7 +581,9 @@ function minsToDisplay(mins){
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 function tsToMins(ts){
+  if(!ts||typeof ts!=='string')return 0;
   const parts=ts.split(':');
+  if(parts.length<2)return 0;
   return parseInt(parts[0])*60+parseInt(parts[1]);
 }
 
@@ -363,7 +623,7 @@ function computeShortest(baseMins){
       .map(b=>{
         const menu=ld('menus',[]).find(m=>m.id===b.menuId);
         const dur=menu?menu.time:60;
-        const st=tsToMins(b.time);
+        const st=tsToMins(b.start);
         return{start:st,end:st+dur};
       })
       .sort((a,b)=>a.start-b.start);
@@ -452,10 +712,17 @@ function spCalc(){
     const closed=c.mx<=0;
     const stStr=closed?'—':minsToDisplay(c.start);
     const mxStr=closed?'本日受付終了':mxTxt(c.mx);
-    return `<tr${closed?' class="sp-closed"':''}>
+    if(closed){
+      return `<tr class="sp-closed">
+        <td class="sp-nm">${c.name}</td>
+        <td class="sp-st">—</td>
+        <td class="sp-mx">本日受付終了</td>
+      </tr>`;
+    }
+    return `<tr class="sp-row-tap" onclick="spOpenBk(${c.id},${c.start},${c.mx})" style="cursor:pointer">
       <td class="sp-nm">${c.name}</td>
       <td class="sp-st">${stStr}</td>
-      <td class="sp-mx">${mxStr}</td>
+      <td class="sp-mx">${mxStr} <span style="font-size:10px;color:var(--gold-d)">▶予約</span></td>
     </tr>`;
   }).join('');
 
@@ -466,6 +733,36 @@ function spCalc(){
   });
   document.getElementById('spSns').textContent=
     lines.length?lines.join('\n'):'（受付可能なセラピストがいません）';
+}
+
+function spOpenBk(therapistId, startMins, maxCourse){
+  // 最大コースをメニューから特定（最大コース以下で最大のもの）
+  const courses = ld('menuCourse',[]).filter(c=>c.mins<=maxCourse);
+  const bestCourse = courses.length
+    ? courses.reduce((a,b)=>a.mins>b.mins?a:b)
+    : null;
+
+  // 開始時間を文字列に（深夜表記対応）
+  const startStr = minsToDisplay(startMins);
+
+  // 予約追加モーダルを開く
+  openNewBk();
+
+  // セラピスト・開始時間・コースを自動セット
+  const thSel = document.getElementById('bk-therapist');
+  if(thSel){
+    thSel.value = String(therapistId);
+  }
+  const startEl = document.getElementById('bk-start');
+  if(startEl){
+    startEl.value = startStr;
+    calcBkEnd();
+  }
+  if(bestCourse){
+    segSet('course', String(bestCourse.mins));
+    calcBkEnd();
+    calcBkTotal();
+  }
 }
 
 function spCopy(){
@@ -552,9 +849,10 @@ function renderTherapists(){
     const a=att.find(x=>x.therapistId===t.id);
     const attBadge=a?`<span class="tag t-att">${a.start}〜${a.end}</span>`:'';
     const tags=[
+      t.rank?`<span class="prof-tag">ランク: <b>${t.rank}</b></span>`:'',
       t.face?`<span class="prof-tag">顔: <b>${t.face}</b></span>`:'',
       t.body?`<span class="prof-tag">体型: <b>${t.body}</b></span>`:'',
-      t.kan?`<span class="prof-tag">感度: <b>${t.kan}</b></span>`:'',
+      t.kan?`<span class="prof-tag">寛容度: <b>${t.kan}</b></span>`:'',
       t.interval?`<span class="prof-tag">INT: <b>${t.interval}分</b></span>`:'',
       t.nomFee?`<span class="prof-tag">指名料: <b>${fp(t.nomFee)}</b></span>`:'',
       t.caution?`<span class="prof-tag">注意: <b>${t.caution}</b></span>`:'',
@@ -567,7 +865,7 @@ function renderTherapists(){
           <div class="th-name" style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
             ${t.name}${attBadge}
           </div>
-          <div class="th-sub">${t.pos||'セラピスト'}</div>
+          <div class="th-sub">${t.rank||''}</div>
         </div>
         <div class="row" style="gap:6px">
           <button class="btn btn-o btn-sm" onclick="openEditTh(${t.id})">編集</button>
@@ -580,11 +878,11 @@ function renderTherapists(){
 }
 
 function openEditTh(id){
-  const t=ld('therapists',[]).find(x=>x.id===id);if(!t)return;
+  const t=ld('therapists',[]).find(x=>x.id===parseInt(id));if(!t)return;
   document.getElementById('thModalTitle').textContent='セラピスト編集';
-  document.getElementById('th-id').value=id;
-  document.getElementById('th-name').value=t.name;
-  document.getElementById('th-pos').value=t.pos||'';
+  document.getElementById('th-id').value=t.id;
+  document.getElementById('th-name').value=t.name||'';
+  document.getElementById('th-rank').value=t.rank||'';
   document.getElementById('th-face').value=t.face||'';
   document.getElementById('th-body').value=t.body||'';
   document.getElementById('th-kan').value=t.kan||'';
@@ -592,30 +890,40 @@ function openEditTh(id){
   document.getElementById('th-interval').value=t.interval||'';
   document.getElementById('th-nomfee').value=t.nomFee||'';
   document.getElementById('th-memo').value=t.memo||'';
-  openM('newTh');
+  // モーダルを直接開く（openMのnewThリセット処理を避ける）
+  document.getElementById('ov').classList.remove('hidden');
+  document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
+  document.getElementById('m-newTh').classList.remove('hidden');
 }
 
 function saveTh(){
-  const id=document.getElementById('th-id').value;
+  const rawId=document.getElementById('th-id').value;
   const name=document.getElementById('th-name').value.trim();
   if(!name){alert('氏名を入力してください');return;}
   const data={
     name,
-    pos:document.getElementById('th-pos').value.trim(),
-    face:document.getElementById('th-face').value.trim(),
-    body:document.getElementById('th-body').value.trim(),
-    kan:document.getElementById('th-kan').value.trim(),
+    rank:document.getElementById('th-rank').value,
+    face:document.getElementById('th-face').value,
+    body:document.getElementById('th-body').value,
+    kan:document.getElementById('th-kan').value,
     caution:document.getElementById('th-caution').value.trim(),
     interval:parseInt(document.getElementById('th-interval').value)||20,
     nomFee:parseInt(document.getElementById('th-nomfee').value)||1000,
     memo:document.getElementById('th-memo').value.trim(),
   };
   const list=ld('therapists',[]);
-  if(!id){
+  if(!rawId){
+    // 新規追加
     list.push({id:nid('th'),...data});
   } else {
-    const idx=list.findIndex(x=>x.id===parseInt(id));
-    if(idx>=0)list[idx]={...list[idx],...data};
+    // 編集: IDで確実に特定
+    const numId=parseInt(rawId);
+    const idx=list.findIndex(x=>x.id===numId);
+    if(idx>=0){
+      list[idx]={...list[idx],...data};
+    } else {
+      alert('編集対象が見つかりませんでした');return;
+    }
   }
   sv('therapists',list);
   closeM();
@@ -633,21 +941,801 @@ function deleteTh(id){
 
 // ── MODAL ──
 function openM(name){
+  if(name==='newBk'){
+    document.getElementById('m-newBk-wrap').classList.remove('hidden');
+    return;
+  }
   document.getElementById('ov').classList.remove('hidden');
   document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
   document.getElementById('m-'+name).classList.remove('hidden');
   if(name==='att')openAtt();
   if(name==='newTh'){
     document.getElementById('thModalTitle').textContent='セラピスト追加';
-    ['th-id','th-name','th-pos','th-face','th-body','th-kan','th-caution','th-interval','th-nomfee','th-memo']
+    ['th-id','th-name','th-face','th-body','th-caution','th-interval','th-nomfee','th-memo']
       .forEach(i=>document.getElementById(i).value='');
+    ['th-rank','th-kan'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
   }
 }
 function closeM(){
+  document.getElementById('m-newBk-wrap').classList.add('hidden');
   document.getElementById('ov').classList.add('hidden');
   document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
 }
 function closeOv(e){if(e.target.id==='ov')closeM();}
+
+// ── BOOKING ──
+let bkThFilter = 'all';
+
+function renderBookingPage(){
+  const bizToday = getToday();
+
+  // 日付フィルターの初期値を営業日当日に設定
+  const dateInput = document.getElementById('bkDateFilter');
+  if(!dateInput.value) dateInput.value = bizToday;
+  const selDate = dateInput.value;
+
+  // ピッカー横の曜日表示
+  const dp = selDate.split('-');
+  const dObj = new Date(parseInt(dp[0]), parseInt(dp[1])-1, parseInt(dp[2]));
+  const youbi = '日月火水木金土'[dObj.getDay()];
+  const ydEl = document.getElementById('bkDateYoubi');
+  if(ydEl) ydEl.textContent = '（'+youbi+'）';
+
+  // 選択日の出勤者のみフィルターボタンに表示
+  const att = ld('attendance',[]);
+  const therapists = ld('therapists',[]);
+  const presentIds = new Set(att.map(a=>a.therapistId));
+  // 当日なら出勤者のみ、それ以外は全員
+  const visibleTh = selDate === bizToday
+    ? therapists.filter(t=>presentIds.has(t.id))
+    : therapists;
+
+  // 選択中フィルターが非表示セラピストなら全員にリセット
+  if(bkThFilter!=='all' && !visibleTh.find(t=>t.id===bkThFilter)){
+    bkThFilter='all';
+  }
+
+  const fb = document.getElementById('thFilterBtns');
+  fb.innerHTML =
+    `<option value="all">全員</option>`
+    + visibleTh.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  fb.value = bkThFilter==='all' ? 'all' : String(bkThFilter);
+
+  // ステータスフィルター
+  const statusF = document.getElementById('statusFilter')?.value||'active';
+
+  // 選択日の予約を取得
+  const allBks = ld('bookings',[]).filter(b=>b.date===selDate);
+  let bookings;
+  if(statusF==='cancel') bookings = allBks.filter(b=>b.status==='cancel');
+  else if(statusF==='all') bookings = allBks;
+  else bookings = allBks.filter(b=>b.status!=='cancel');
+
+  const filtered = bkThFilter==='all'
+    ? bookings
+    : bookings.filter(b=>b.therapistId===bkThFilter);
+  filtered.sort((a,b)=>a.start.localeCompare(b.start));
+
+  // バッジは営業日当日の予約数
+  const todayBks = ld('bookings',[]).filter(b=>b.date===bizToday&&b.status!=='cancel');
+  document.getElementById('bkBadge').textContent = todayBks.length || '';
+
+  document.getElementById('bkList').innerHTML = filtered.length
+    ? filtered.map(bk=>bkCardHTML(bk)).join('')
+    : '<div style="color:var(--tm);font-size:13px;padding:10px 0">予約がありません</div>';
+}
+
+function setBkFilter(id){
+  bkThFilter = id==='all' ? 'all' : parseInt(id);
+  renderBookingPage();
+}
+
+function bkCardHTML(bk){
+  const th = ld('therapists',[]).find(t=>t.id===bk.therapistId);
+  const thName = th ? th.name : '—';
+  const cancelled = bk.status==='cancel';
+  const tags = [
+    bk.attr ? bk.attr : '',
+    bk.nom ? bk.nom : '',
+    bk.payment ? bk.payment : '',
+    bk.op ? 'OP:'+bk.op : '',
+  ].filter(Boolean).map(t=>`<span class="bk-tag">${t}</span>`).join('');
+  const total = bk.total ? '¥'+Number(bk.total).toLocaleString() : '';
+  return `<div class="bk-card${cancelled?' bk-cancelled':''}" onclick="${cancelled?'':''}" style="${cancelled?'opacity:.55;':''}">
+    <div class="bk-row1">
+      <span class="bk-time" style="${cancelled?'text-decoration:line-through;color:var(--tm)':''}">${bk.start}〜${bk.end}</span>
+      <span class="bk-name">${bk.cname||'—'}${bk.tel4?' ('+bk.tel4+')':''}</span>
+      <span style="font-size:12px;color:var(--ts);margin-left:auto">${thName}</span>
+    </div>
+    <div class="bk-row2" style="justify-content:space-between;display:flex;flex-wrap:wrap;gap:4px">
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+        <span>${bk.course}分${bk.ext>0?' +延'+bk.ext+'分':''}</span>
+        ${tags}
+        ${total?`<span style="color:var(--gold-l);font-weight:600">${total}</span>`:''}
+        ${bk.memo?`<span style="color:var(--tm)">${bk.memo}</span>`:''}
+      </div>
+      <div style="display:flex;gap:5px;align-items:center">
+        ${cancelled
+          ? `<span class="bk-tag" style="background:#2D1010;color:#C85A5A">キャンセル</span>
+             <button class="btn btn-o btn-sm" onclick="restoreBk(${bk.id})" style="font-size:11px;padding:3px 8px">再予約</button>`
+          : `<button class="btn btn-o btn-sm" onclick="openEditBk(${bk.id})" style="font-size:11px;padding:3px 8px">編集</button>`
+        }
+      </div>
+    </div>
+  </div>`;
+}
+
+function updateTherapistSelect(){
+  const date = document.getElementById('bk-date').value || getToday();
+  const bizToday = getToday();
+  const att = ld('attendance',[]);
+  const therapists = ld('therapists',[]);
+
+  // 営業日（今日）のみ出勤者に絞る、それ以外は全員表示
+  let available;
+  if(date === bizToday){
+    const presentIds = new Set(att.map(a=>a.therapistId));
+    available = therapists.filter(t=>presentIds.has(t.id));
+  } else {
+    available = therapists;
+  }
+
+  const sel = document.getElementById('bk-therapist');
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">-- 選択 --</option>'
+    + available.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+
+  // 既存選択値が引き続き有効なら保持
+  if(currentVal && available.find(t=>String(t.id)===String(currentVal))){
+    sel.value = currentVal;
+  }
+}
+
+function rebuildAttrNomButtons(){
+  const s='flex:1;min-width:28px;padding:6px 2px;font-size:12px';
+  const attrWrap = document.getElementById('seg-attr');
+  if(attrWrap) attrWrap.innerHTML =
+    `<button class="seg-btn" data-val="N" onclick="segSelect('attr','N')" style="${s}">N</button>`+
+    `<button class="seg-btn" data-val="R" onclick="segSelect('attr','R')" style="${s}">R</button>`;
+
+  const nomWrap = document.getElementById('seg-nom');
+  if(nomWrap) nomWrap.innerHTML =
+    `<button class="seg-btn" data-val="F" onclick="segSelect('nom','F')" style="${s}">F</button>`+
+    `<button class="seg-btn" data-val="写" onclick="segSelect('nom','写')" style="${s}">写</button>`+
+    `<button class="seg-btn" data-val="本" onclick="segSelect('nom','本')" style="${s}">本</button>`+
+    `<button class="seg-btn" data-val="姫" onclick="segSelect('nom','姫')" style="${s}">姫</button>`;
+
+  const opWrap = document.getElementById('seg-op');
+  if(opWrap) opWrap.innerHTML =
+    `<button class="seg-btn" data-val="有" onclick="segSelect('op','有')" style="${s}">有</button>`+
+    `<button class="seg-btn" data-val="無" onclick="segSelect('op','無')" style="${s}">無</button>`;
+}
+
+function toggleMemo(){
+  const el = document.getElementById('bk-memo');
+  const btn = document.getElementById('memo-toggle-btn');
+  if(!el||!btn)return;
+  const hidden = el.classList.contains('hidden');
+  el.classList.toggle('hidden', !hidden);
+  btn.textContent = hidden ? '▼ メモ' : '▶ メモ';
+}
+
+function toggleExtMore(){
+  const more = document.getElementById('ext-more');
+  const btn = document.getElementById('ext-more-btn');
+  if(!more)return;
+  const visible = more.style.display !== 'none';
+  more.style.display = visible ? 'none' : 'contents';
+  btn.textContent = visible ? '…' : '▲';
+}
+function resetExtMore(){
+  const more = document.getElementById('ext-more');
+  const btn = document.getElementById('ext-more-btn');
+  if(more) more.style.display = 'none';
+  if(btn){ btn.textContent = '…'; }
+}
+
+function segSelect(group, val){
+  const wrap = document.getElementById('seg-'+group);
+  if(!wrap)return;
+  wrap.querySelectorAll('.seg-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val===val);
+  });
+  calcBkEnd();
+  calcBkTotal();
+}
+function segGet(group){
+  const wrap = document.getElementById('seg-'+group);
+  if(!wrap)return '';
+  const active = wrap.querySelector('.seg-btn.active');
+  return active ? active.dataset.val : '';
+}
+function segReset(group){
+  const wrap = document.getElementById('seg-'+group);
+  if(!wrap)return;
+  wrap.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
+}
+function segSet(group, val){
+  const wrap = document.getElementById('seg-'+group);
+  if(!wrap)return;
+  wrap.querySelectorAll('.seg-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val===String(val));
+  });
+}
+
+function openNewBk(){
+  document.getElementById('bkModalTitle').textContent='予約追加';
+  document.getElementById('bk-id').value='';
+  document.getElementById('bk-del-btn').classList.add('hidden');
+  document.getElementById('bk-date').value=getToday();
+  updateTherapistSelect();
+  ['bk-start','bk-cname','bk-tel4','bk-memo'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('bk-end-disp').textContent='--:--';
+  // メモトグルを閉じた状態に
+  const memoEl=document.getElementById('bk-memo');
+  const memoBtn=document.getElementById('memo-toggle-btn');
+  if(memoEl){memoEl.classList.add('hidden');memoEl.value='';}
+  if(memoBtn)memoBtn.textContent='▶ メモ';
+  document.getElementById('bk-total-disp').textContent='¥0';
+  // まずボタン再生成
+  rebuildCourseButtons();
+  rebuildExtButtons();
+  rebuildDiscButtons();
+  rebuildAttrNomButtons();
+  // 生成後にリセット・初期値セット
+  ['course','attr','nom','op'].forEach(g=>segReset(g));
+  segSet('ext','0');
+  resetExtMore();
+  setPayment('現金');
+  document.getElementById('op-wrap').style.display='none';
+  document.getElementById('bk-disc').value='0';
+  document.getElementById('bk-disc').readOnly=true;
+  openM('newBk');
+  calcBkTotal();
+}
+
+function openEditBk(id){
+  const bk = ld('bookings',[]).find(x=>x.id===id);
+  if(!bk)return;
+  document.getElementById('bkModalTitle').textContent='予約編集';
+  document.getElementById('bk-id').value=id;
+  document.getElementById('bk-date').value=bk.date||getToday();
+  updateTherapistSelect();
+  document.getElementById('bk-therapist').value=bk.therapistId||'';
+  document.getElementById('bk-start').value=bk.start||'';
+  document.getElementById('bk-cname').value=bk.cname||'';
+  document.getElementById('bk-tel4').value=bk.tel4||'';
+  // メモ復元
+  const memoEl2=document.getElementById('bk-memo');
+  const memoBtn2=document.getElementById('memo-toggle-btn');
+  if(memoEl2){
+    memoEl2.value=bk.memo||'';
+    if(bk.memo){
+      memoEl2.classList.remove('hidden');
+      if(memoBtn2)memoBtn2.textContent='▼ メモ';
+    } else {
+      memoEl2.classList.add('hidden');
+      if(memoBtn2)memoBtn2.textContent='▶ メモ';
+    }
+  }
+  // まずボタン再生成
+  rebuildCourseButtons();
+  rebuildExtButtons();
+  rebuildDiscButtons();
+  rebuildAttrNomButtons();
+  // 生成後に値をセット
+  segReset('course'); segSet('course', String(bk.course||''));
+  const extVal = parseInt(bk.ext)||0;
+  resetExtMore();
+  if(extVal>100){
+    const m=document.getElementById('ext-more');
+    const b=document.getElementById('ext-more-btn');
+    if(m)m.style.display='contents';if(b)b.textContent='▲';
+  }
+  segSet('ext', String(extVal||0));
+  ['attr','nom','op'].forEach(g=>segReset(g));
+  segSet('attr', bk.attr||'');
+  segSet('nom', bk.nom||'');
+  segSet('op', bk.op||'');
+  setPayment(bk.payment||'現金');
+  // 割引
+  const savedDisc = parseInt(bk.disc)||0;
+  const discBtns = document.querySelectorAll('#disc-btns .seg-btn[data-val]');
+  let matched=false;
+  discBtns.forEach(b=>{if(parseInt(b.dataset.val)===savedDisc){b.classList.add('active');matched=true;}});
+  if(!matched && savedDisc>0){
+    document.getElementById('bk-disc').readOnly=false;
+    document.getElementById('bk-disc').value=savedDisc;
+    const mb=document.getElementById('disc-manual-btn');
+    if(mb){mb.textContent='固定に戻す';mb.classList.add('active');}
+  } else {
+    document.getElementById('bk-disc').readOnly=true;
+    document.getElementById('bk-disc').value=savedDisc;
+  }
+  document.getElementById('op-wrap').style.display='';
+  openM('newBk');
+  // openM後にボタン表示制御（openM内のhidden付け直しの後に実行）
+  if(bk.status==='cancel'){
+    document.getElementById('bk-del-btn').classList.add('hidden');
+  } else {
+    document.getElementById('bk-del-btn').classList.remove('hidden');
+  }
+  calcBkEnd();
+  calcBkTotal();
+}
+
+function setPayment(type){
+  document.getElementById('pay-cash').classList.toggle('active', type==='現金');
+  document.getElementById('pay-paypay').classList.toggle('active', type==='PAYPAY');
+  document.getElementById('pay-cash').dataset.selected = type==='現金'?'1':'';
+  document.getElementById('pay-paypay').dataset.selected = type==='PAYPAY'?'1':'';
+}
+
+function getPayment(){
+  return document.getElementById('pay-cash').dataset.selected ? '現金' : 'PAYPAY';
+}
+
+function calcBkEnd(){
+  const start = document.getElementById('bk-start').value;
+  const course = parseInt(segGet('course'))||0;
+  const ext = parseInt(segGet('ext'))||0;
+  if(!start||!course){document.getElementById('bk-end-disp').textContent='--:--';return;}
+  const startM = tsToMins(start);
+  const endM = startM + course + ext;
+  document.getElementById('bk-end-disp').textContent = minsToDisplay(endM);
+}
+
+function calcBkTotal(){
+  const courseMins = parseInt(segGet('course'))||0;
+  const extMins = parseInt(segGet('ext'))||0;
+  const disc = parseInt(document.getElementById('bk-disc').value)||0;
+  const therapistId = parseInt(document.getElementById('bk-therapist').value)||0;
+  const nom = segGet('nom');
+
+  // コース料金
+  const courseItem = ld('menuCourse',[]).find(c=>c.mins===courseMins);
+  if(!courseItem){
+    document.getElementById('bk-total-disp').textContent='¥0';
+    return 0;
+  }
+  let total = courseItem.price;
+
+  // 延長料金: 単価(20分あたり) × 延長分数/20
+  if(extMins>0){
+    const extItem = ld('menuExt',[]).find(e=>e.mins===20); // 20分単価
+    if(extItem){
+      total += extItem.price * (extMins/20);
+    }
+  }
+
+  // 指名料
+  if(nom){
+    const nomItem = ld('menuNom',[]).find(n=>n.label===nom);
+    if(nomItem){
+      if(nomItem.price===null){
+        const therapist = ld('therapists',[]).find(t=>t.id===therapistId);
+        if(therapist) total += therapist.nomFee||0;
+      } else {
+        total += nomItem.price;
+      }
+    }
+  }
+
+  // OP料金
+  const op = segGet('op');
+  if(op){
+    const opItem = ld('menuOp',[]).find(o=>o.label===op);
+    if(opItem) total += opItem.price||0;
+  }
+
+  // 割引
+  total -= disc;
+  if(total<0)total=0;
+
+  document.getElementById('bk-total-disp').textContent = '¥'+Math.round(total).toLocaleString();
+  return Math.round(total);
+}
+
+function saveBk(){
+  const therapistId = parseInt(document.getElementById('bk-therapist').value)||0;
+  const start = document.getElementById('bk-start').value;
+  const course = parseInt(segGet('course'))||0;
+  if(!therapistId){alert('セラピストを選択してください');return;}
+  if(!start){alert('開始時間を入力してください');return;}
+  if(!course){alert('コースを選択してください');return;}
+
+  const ext = parseInt(segGet('ext'))||0;
+  const startM = tsToMins(start);
+  const end = minsToDisplay(startM + course + ext);
+  const total = calcBkTotal()||0;
+  const rawId = document.getElementById('bk-id').value;
+
+  const bkData = {
+    date: document.getElementById('bk-date').value||getToday(),
+    therapistId,
+    start,
+    end,
+    course,
+    ext,
+    cname: document.getElementById('bk-cname').value.trim(),
+    tel4: document.getElementById('bk-tel4').value.trim(),
+    attr: segGet('attr'),
+    nom: segGet('nom'),
+    payment: getPayment(),
+    disc: parseInt(document.getElementById('bk-disc').value)||0,
+    op: segGet('op'),
+    total,
+    memo: document.getElementById('bk-memo').value.trim(),
+  };
+
+  const bookings = ld('bookings',[]);
+  const now = new Date().toISOString();
+  if(!rawId){
+    // 新規追加: createdBy・createdAt・historyを付与
+    bookings.push({
+      id:nid('bk'),
+      ...bkData,
+      createdBy: CUR.id,
+      createdByName: CUR.display,
+      createdAt: now,
+      history:[{
+        action:'追加',
+        by: CUR.id,
+        byName: CUR.display,
+        at: now,
+      }],
+    });
+  } else {
+    // 編集: historyに変更ログを追記
+    const numId = parseInt(rawId);
+    const idx = bookings.findIndex(x=>x.id===numId);
+    if(idx>=0){
+      const prev = bookings[idx];
+      const hist = prev.history||[];
+      hist.push({
+        action:'変更',
+        by: CUR.id,
+        byName: CUR.display,
+        at: now,
+      });
+      bookings[idx]={...prev,...bkData,history:hist};
+    }
+  }
+  sv('bookings', bookings);
+  closeM();
+  renderBookingPage();
+  spCalc();
+}
+
+function deleteBk(){
+  const rawId = document.getElementById('bk-id').value;
+  if(!rawId)return;
+  if(!confirm('この予約をキャンセルしますか？'))return;
+  const numId = parseInt(rawId);
+  const bookings = ld('bookings',[]);
+  const target = bookings.find(x=>x.id===numId);
+  if(target){
+    const now = new Date().toISOString();
+    const hist = target.history||[];
+    hist.push({action:'キャンセル', by:CUR.id, byName:CUR.display, at:now});
+    target.status='cancel';
+    target.history=hist;
+  }
+  sv('bookings', bookings);
+  closeM();
+  // キャンセル後はキャンセル絞り込みに切り替えて確認しやすく
+  const sf = document.getElementById('statusFilter');
+  if(sf) sf.value = 'cancel';
+  renderBookingPage();
+  spCalc();
+}
+
+function cancelBk(id){
+  // 一覧からのキャンセル処理
+  if(!confirm('この予約をキャンセルしますか？'))return;
+  const bookings = ld('bookings',[]);
+  const target = bookings.find(x=>x.id===id);
+  if(target){
+    const now = new Date().toISOString();
+    const hist = target.history||[];
+    hist.push({action:'キャンセル', by:CUR.id, byName:CUR.display, at:now});
+    target.status='cancel';
+    target.history=hist;
+  }
+  sv('bookings', bookings);
+  renderBookingPage();
+  spCalc();
+}
+
+function restoreBk(id){
+  // キャンセル→成約に戻す
+  if(!confirm('この予約を成約に戻しますか？'))return;
+  const bookings = ld('bookings',[]);
+  const target = bookings.find(x=>x.id===id);
+  if(target){
+    const now = new Date().toISOString();
+    const hist = target.history||[];
+    hist.push({action:'再予約', by:CUR.id, byName:CUR.display, at:now});
+    target.status='active';
+    target.history=hist;
+  }
+  sv('bookings', bookings);
+  renderBookingPage();
+  spCalc();
+}
+
+// ── MENU MANAGER ──
+const MENU_TYPES = {
+  course: {key:'menuCourse', label:'コース', placeholder:'60分'},
+  ext:    {key:'menuExt',    label:'延長',   placeholder:'20分'},
+  op:     {key:'menuOp',     label:'OP',     placeholder:'有'},
+  disc:   {key:'menuDisc',   label:'割引',   placeholder:'1000円引'},
+};
+
+function renderMenuMgr(){
+  // コース
+  renderMgrList('course', ld('menuCourse',[]), true);
+  // 延長
+  renderMgrList('ext', ld('menuExt',[]), true);
+  // OP
+  renderMgrList('op', ld('menuOp',[]), true);
+  // 指名料（編集不可の本以外）
+  const noms = ld('menuNom',[]);
+  document.getElementById('mgr-nom').innerHTML = noms.map((n,i)=>`
+    <div class="mgr-item">
+      <span class="mgr-label">${n.label}</span>
+      <span class="mgr-price">${n.price===null?'セラピスト設定':'¥'+Number(n.price).toLocaleString()}</span>
+    </div>`).join('');
+  // 割引
+  renderMgrList('disc', ld('menuDisc',[]), true);
+}
+
+function renderMgrList(type, items, canEdit){
+  const el = document.getElementById('mgr-'+type);
+  if(!el)return;
+  el.innerHTML = items.map((item,i)=>`
+    <div class="mgr-item">
+      <span class="mgr-label">${item.label}</span>
+      <span class="mgr-price">¥${Number(item.price).toLocaleString()}</span>
+      ${canEdit?`<div class="row" style="gap:5px">
+        <button class="btn btn-o btn-sm" onclick="openMenuItemModal('${type}',${i})">編集</button>
+        <button class="btn btn-d btn-sm" onclick="deleteMenuItem('${type}',${i})">削除</button>
+      </div>`:''}
+    </div>`).join('') || '<div style="color:var(--tm);font-size:13px;padding:6px 0">未登録</div>';
+}
+
+function openMenuItemModal(type, idx){
+  const cfg = MENU_TYPES[type];
+  if(!cfg)return;
+  document.getElementById('mi-type').value = type;
+  document.getElementById('mi-idx').value = idx !== undefined ? idx : '';
+  document.getElementById('menuItemTitle').textContent = idx !== undefined ? cfg.label+'を編集' : cfg.label+'を追加';
+  document.getElementById('mi-label').placeholder = cfg.placeholder;
+
+  if(idx !== undefined){
+    const items = ld(cfg.key,[]);
+    const item = items[idx];
+    document.getElementById('mi-label').value = item.label;
+    document.getElementById('mi-price').value = item.price;
+  } else {
+    document.getElementById('mi-label').value = '';
+    document.getElementById('mi-price').value = '';
+  }
+  openM('menuItem');
+}
+
+function saveMenuItem(){
+  const type = document.getElementById('mi-type').value;
+  const idx = document.getElementById('mi-idx').value;
+  const label = document.getElementById('mi-label').value.trim();
+  const price = parseInt(document.getElementById('mi-price').value)||0;
+  if(!label){alert('名称を入力してください');return;}
+  const cfg = MENU_TYPES[type];
+  if(!cfg)return;
+  const items = ld(cfg.key,[]);
+  if(idx===''){
+    items.push({label, price});
+  } else {
+    items[parseInt(idx)] = {...items[parseInt(idx)], label, price};
+  }
+  sv(cfg.key, items);
+  closeM();
+  renderMenuMgr();
+  // コースボタンも更新
+  if(type==='course') rebuildCourseButtons();
+  if(type==='ext') rebuildExtButtons();
+  if(type==='disc') rebuildDiscButtons();
+}
+
+function deleteMenuItem(type, idx){
+  if(!confirm('削除しますか？'))return;
+  const cfg = MENU_TYPES[type];
+  if(!cfg)return;
+  const items = ld(cfg.key,[]);
+  items.splice(idx,1);
+  sv(cfg.key, items);
+  renderMenuMgr();
+  if(type==='course') rebuildCourseButtons();
+  if(type==='ext') rebuildExtButtons();
+  if(type==='disc') rebuildDiscButtons();
+}
+
+// 予約モーダルのコース/延長/割引ボタンをメニューデータから動的生成
+function rebuildCourseButtons(){
+  const courses = ld('menuCourse',[]);
+  const wrap = document.getElementById('seg-course');
+  if(!wrap)return;
+  wrap.innerHTML = courses.map(c=>
+    `<button class="seg-btn" data-val="${c.mins}" onclick="segSelect('course','${c.mins}')">${c.label}</button>`
+  ).join('');
+}
+
+function rebuildExtButtons(){
+  const exts = ld('menuExt',[]);
+  const wrap = document.getElementById('seg-ext');
+  if(!wrap)return;
+  // なし + 登録済み(〜100) + … + 100超
+  const base = exts.filter(e=>e.mins<=100);
+  const more = exts.filter(e=>e.mins>100);
+  wrap.innerHTML =
+    `<button class="seg-btn active" data-val="0" onclick="segSelect('ext','0')">なし</button>`
+    + base.map(e=>`<button class="seg-btn" data-val="${e.mins}" onclick="segSelect('ext','${e.mins}')">${e.mins}</button>`).join('')
+    + (more.length ? `<button class="seg-btn" id="ext-more-btn" data-val="" onclick="toggleExtMore()" style="border-style:dashed">…</button>
+      <span id="ext-more" style="display:none;contents:''">
+        ${more.map(e=>`<button class="seg-btn" data-val="${e.mins}" onclick="segSelect('ext','${e.mins}')">${e.mins}</button>`).join('')}
+      </span>` : '');
+}
+
+function rebuildDiscButtons(){
+  const discs = ld('menuDisc',[]);
+  const wrap = document.getElementById('disc-btns');
+  if(!wrap)return;
+  wrap.innerHTML = discs.map(d=>
+    `<button class="seg-btn" data-val="${d.price}" onclick="selectDisc(${d.price})">${d.label}</button>`
+  ).join('') + `<button class="seg-btn" id="disc-manual-btn" onclick="toggleDiscManual()">手入力</button>`;
+}
+
+function selectDisc(price){
+  document.getElementById('bk-disc').value = price;
+  document.getElementById('bk-disc').readOnly = true;
+  // ボタンのアクティブ状態更新
+  document.querySelectorAll('#disc-btns .seg-btn').forEach(b=>{
+    b.classList.toggle('active', String(b.dataset.val)===String(price));
+  });
+  calcBkTotal();
+}
+
+function toggleDiscManual(){
+  const inp = document.getElementById('bk-disc');
+  const btn = document.getElementById('disc-manual-btn');
+  const isManual = !inp.readOnly;
+  if(isManual){
+    // 手入力→固定選択肢に戻す
+    inp.readOnly = true;
+    inp.value = 0;
+    btn.textContent = '手入力';
+    btn.classList.remove('active');
+    document.querySelectorAll('#disc-btns .seg-btn[data-val]').forEach(b=>b.classList.remove('active'));
+  } else {
+    // 固定→手入力
+    inp.readOnly = false;
+    inp.value = '';
+    inp.focus();
+    btn.textContent = '固定に戻す';
+    btn.classList.add('active');
+    document.querySelectorAll('#disc-btns .seg-btn[data-val]').forEach(b=>b.classList.remove('active'));
+  }
+  calcBkTotal();
+}
+
+// ── SALES ──
+function renderSales(){
+  const dateEl = document.getElementById('salesDate');
+  if(!dateEl.value) dateEl.value = getToday();
+  const selDate = dateEl.value;
+
+  // 曜日ラベル
+  const dp = selDate.split('-');
+  const dObj = new Date(parseInt(dp[0]),parseInt(dp[1])-1,parseInt(dp[2]));
+  document.getElementById('salesDayLabel').textContent =
+    '（'+'日月火水木金土'[dObj.getDay()]+'）';
+
+  // 当日予約データ
+  const bks = ld('bookings',[]).filter(b=>b.date===selDate);
+
+  // KPI
+  const totalSales = bks.reduce((s,b)=>s+(b.total||0),0);
+  document.getElementById('s-sales').textContent = '¥'+totalSales.toLocaleString();
+  document.getElementById('s-visits').textContent = bks.length;
+
+  // 顧客属性別来店
+  const attrs = ['N','R',''];
+  const attrLabels = {'N':'N','R':'R','':'未設定'};
+  document.getElementById('s-attr').innerHTML = attrs.map(a=>{
+    const cnt = bks.filter(b=>(b.attr||'')===a).length;
+    if(a===''&&cnt===0) return '';
+    return `<div class="sales-chip">
+      <span class="sales-chip-lbl">${attrLabels[a]}</span>
+      <span class="sales-chip-val">${cnt}件</span>
+    </div>`;
+  }).join('');
+
+  // 指名種別
+  const noms = ['F','写','本','姫',''];
+  const nomLabels = {'F':'F','写':'写','本':'本','姫':'姫','':'指名なし'};
+  document.getElementById('s-nom').innerHTML = noms.map(n=>{
+    const cnt = bks.filter(b=>(b.nom||'')===n).length;
+    if(cnt===0) return '';
+    return `<div class="sales-chip">
+      <span class="sales-chip-lbl">${nomLabels[n]}</span>
+      <span class="sales-chip-val">${cnt}件</span>
+    </div>`;
+  }).join('');
+
+  // コース別
+  const courses = ld('menuCourse',[]);
+  document.getElementById('s-course').innerHTML = courses.map(c=>{
+    const cnt = bks.filter(b=>b.course===c.mins).length;
+    return `<div class="sales-chip">
+      <span class="sales-chip-lbl">${c.label}</span>
+      <span class="sales-chip-val">${cnt}本</span>
+    </div>`;
+  }).join('') || '<span style="color:var(--tm);font-size:13px">なし</span>';
+
+  // 延長（20分単位 ×〇表示）
+  const extBks = bks.filter(b=>b.ext>0);
+  if(extBks.length===0){
+    document.getElementById('s-ext').innerHTML = '<span style="color:var(--tm);font-size:13px">なし</span>';
+  } else {
+    // 延長分数ごとに集計
+    const extMap = {};
+    extBks.forEach(b=>{
+      const key = b.ext;
+      extMap[key] = (extMap[key]||0)+1;
+    });
+    document.getElementById('s-ext').innerHTML = Object.keys(extMap)
+      .sort((a,b)=>parseInt(a)-parseInt(b))
+      .map(mins=>{
+        const times = parseInt(mins)/20;
+        return `<div class="sales-chip">
+          <span class="sales-chip-lbl">×${times}（${mins}分）</span>
+          <span class="sales-chip-val">${extMap[mins]}本</span>
+        </div>`;
+      }).join('');
+  }
+
+  // OP有件数
+  const opCnt = bks.filter(b=>b.op==='有').length;
+  document.getElementById('s-op').textContent = opCnt + '件';
+
+  // 内勤別成約本数
+  const accounts = ld('accounts',[]).filter(a=>a.role!=='dev'||true);
+  // createdByで集計
+  const staffMap = {};
+  bks.forEach(b=>{
+    const key = b.createdBy||'unknown';
+    staffMap[key] = (staffMap[key]||0)+1;
+  });
+  const allAccounts = ld('accounts',[]);
+  const staffRows = Object.keys(staffMap).map(uid=>{
+    const acc = allAccounts.find(a=>a.id===uid);
+    const name = acc ? acc.display : uid;
+    const cnt = staffMap[uid];
+    const sales = bks.filter(b=>b.createdBy===uid).reduce((s,b)=>s+(b.total||0),0);
+    return {name, cnt, sales};
+  }).sort((a,b)=>b.cnt-a.cnt);
+
+  document.getElementById('s-staff').innerHTML = staffRows.length
+    ? staffRows.map(r=>`
+      <div class="sales-staff-item">
+        <div style="flex:1">
+          <div class="sales-staff-name">${r.name}</div>
+          <div class="sales-staff-sub">売上: ¥${r.sales.toLocaleString()}</div>
+        </div>
+        <div class="sales-staff-cnt">${r.cnt}本</div>
+      </div>`).join('')
+    : '<div style="color:var(--tm);font-size:13px;padding:6px 0">データなし</div>';
+}
 
 function showPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>{p.classList.add('hidden');p.classList.remove('active')});
@@ -655,7 +1743,103 @@ function showPage(name,btn){
   const p=document.getElementById('page-'+name);
   if(p){p.classList.remove('hidden');p.classList.add('active');}
   if(btn)btn.classList.add('active');
+  if(name==='booking')renderBookingPage();
+  if(name==='menuMgr')renderMenuMgr();
+  if(name==='sales')renderSales();
 }
+initData();
 </script>
+<div id="m-newBk-wrap" class="hidden" style="position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.78);overflow-y:scroll;-webkit-overflow-scrolling:touch">
+  <div style="background:var(--dark2);border:1px solid var(--bdr);border-radius:12px;padding:12px;width:100%;min-height:100vh;box-sizing:border-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span style="font-size:14px;font-weight:600;color:var(--gold)" id="bkModalTitle">予約追加</span>
+      <button class="btn btn-o btn-sm" onclick="closeM()">✕</button>
+    </div>
+    <input type="hidden" id="bk-id">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+      <div>
+        <div class="bk-lbl">日付</div>
+        <input type="date" class="bk-inp" id="bk-date" onchange="updateTherapistSelect()">
+      </div>
+      <div>
+        <div class="bk-lbl">指名セラピスト</div>
+        <select class="bk-inp" id="bk-therapist" onchange="calcBkTotal()"></select>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+      <div>
+        <div class="bk-lbl">開始時間</div>
+        <input class="bk-inp" id="bk-start" placeholder="1000"
+          onblur="fmtTI(this);calcBkEnd()"
+          onkeydown="if(event.key==='Enter'){fmtTI(this);calcBkEnd();}">
+      </div>
+      <div>
+        <div class="bk-lbl">終了時間</div>
+        <div class="bk-disp" id="bk-end-disp">--:--</div>
+      </div>
+    </div>
+
+    <div class="bk-lbl">コース</div>
+    <div class="seg-wrap" id="seg-course" style="margin-bottom:6px"></div>
+
+    <div class="bk-lbl">延長</div>
+    <div class="seg-wrap seg-sm" id="seg-ext" style="margin-bottom:6px"></div>
+
+    <div style="display:grid;grid-template-columns:3fr 2fr;gap:6px;margin-bottom:6px">
+      <div>
+        <div class="bk-lbl">顧客名</div>
+        <input class="bk-inp" id="bk-cname" placeholder="山田 太郎">
+      </div>
+      <div>
+        <div class="bk-lbl">下四桁</div>
+        <input class="bk-inp" id="bk-tel4" placeholder="1234" maxlength="4">
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">
+      <div>
+        <div class="bk-lbl">属性</div>
+        <div class="seg-wrap" id="seg-attr" style="margin-bottom:0"></div>
+      </div>
+      <div>
+        <div class="bk-lbl">指名</div>
+        <div class="seg-wrap" id="seg-nom" style="margin-bottom:0;flex-wrap:wrap;gap:4px"></div>
+      </div>
+      <div>
+        <div class="bk-lbl">支払い</div>
+        <div style="display:flex;gap:4px">
+          <button class="pay-btn active" id="pay-cash" onclick="setPayment('現金')" style="padding:6px 4px;font-size:12px">現金</button>
+          <button class="pay-btn" id="pay-paypay" onclick="setPayment('PAYPAY')" style="padding:6px 4px;font-size:11px">PAY</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bk-lbl">割引</div>
+    <div class="seg-wrap seg-sm" id="disc-btns" style="margin-bottom:4px"></div>
+    <input type="number" class="bk-inp" id="bk-disc" placeholder="0" oninput="calcBkTotal()" readonly style="margin-bottom:6px">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+      <div id="op-wrap">
+        <div class="bk-lbl">OP</div>
+        <div class="seg-wrap" id="seg-op" style="margin-bottom:0"></div>
+      </div>
+      <div>
+        <div class="bk-lbl">総額</div>
+        <div class="bk-disp" id="bk-total-disp" style="color:var(--gold);font-weight:600">¥0</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:8px">
+      <button onclick="toggleMemo()" style="background:none;border:none;color:var(--ts);font-size:12px;cursor:pointer;padding:0" id="memo-toggle-btn">▶ メモ</button>
+      <textarea class="bk-inp hidden" id="bk-memo" rows="2" placeholder="備考" style="resize:none;margin-top:4px;width:100%"></textarea>
+    </div>
+
+    <button id="bk-del-btn" class="btn btn-d" style="width:100%;padding:10px;font-size:14px;margin-bottom:6px" onclick="alert('bk-id='+document.getElementById('bk-id').value)">この予約をキャンセル(テスト)</button>
+    <button class="btn btn-g" style="width:100%;padding:10px;font-size:14px" onclick="saveBk()">保存</button>
+  
+  </div>
+</div>
 </body>
 </html>
