@@ -193,9 +193,10 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
     <button class="nb active" onclick="showPage('dash',this)">ダッシュボード</button>
     <button class="nb" onclick="showPage('booking',this)">予約管理<span class="badge" id="bkBadge">0</span></button>
     <button class="nb" onclick="showPage('therapist',this)">セラピスト一覧</button>
-    <button class="nb" onclick="showPage('menuMgr',this)">メニュー管理</button>
-    <button class="nb" onclick="showPage('sales',this)">売上</button>
-    <button class="nb" onclick="showPage('storeSetting',this)">店舗設定</button>
+    <button class="nb" id="nav-menu" onclick="showPage('menuMgr',this)">メニュー管理</button>
+    <button class="nb" id="nav-sales" onclick="showPage('sales',this)">売上</button>
+    <button class="nb" id="nav-store" onclick="showPage('storeSetting',this)">店舗設定</button>
+    <button class="nb" id="nav-accounts" onclick="showPage('accounts',this)">アカウント</button>
   </div>
   <div class="content">
 
@@ -450,6 +451,15 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
 
     </div>
 
+  <!-- アカウント管理 -->
+    <div class="page hidden" id="page-accounts">
+      <div class="rb" style="margin-bottom:14px">
+        <span class="sec" style="margin:0">アカウント管理</span>
+        <button class="btn btn-g btn-sm" onclick="openM('newAcc')">＋ 追加</button>
+      </div>
+      <div id="accList"></div>
+    </div>
+
   </div>
 </div>
 
@@ -498,6 +508,46 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
     <div id="soldList"></div>
     <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px">
       <button class="btn btn-o" onclick="closeM()">閉じる</button>
+    </div>
+  </div>
+
+  <!-- アカウント追加・編集 -->
+  <div class="modal hidden" id="m-newAcc">
+    <div class="mt" id="accModalTitle">アカウント追加</div>
+    <input type="hidden" id="acc-id">
+    <label class="lbl">表示名</label>
+    <input class="inp" id="acc-display" placeholder="田中 花子">
+    <label class="lbl">ユーザー名</label>
+    <input class="inp" id="acc-username" placeholder="tanaka" autocomplete="off">
+    <label class="lbl">パスワード</label>
+    <input type="password" class="inp" id="acc-pass" placeholder="••••••••">
+    <label class="lbl">ロール</label>
+    <select class="inp" id="acc-role">
+      <option value="admin">管理者</option>
+      <option value="staff">内勤</option>
+    </select>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:8px">
+      <button class="btn btn-o" onclick="closeM()">キャンセル</button>
+      <button class="btn btn-g" onclick="saveAcc()">保存</button>
+    </div>
+  </div>
+
+  <!-- PW変更 -->
+  <div class="modal hidden" id="m-chgPw">
+    <div class="mt">パスワード変更</div>
+    <input type="hidden" id="pw-uid">
+    <div id="pw-curr-wrap">
+      <label class="lbl">現在のパスワード</label>
+      <input type="password" class="inp" id="pw-curr" placeholder="••••••••">
+    </div>
+    <label class="lbl">新しいパスワード</label>
+    <input type="password" class="inp" id="pw-new" placeholder="••••••••">
+    <label class="lbl">確認</label>
+    <input type="password" class="inp" id="pw-new2" placeholder="••••••••">
+    <div id="pw-err" style="color:#c06060;font-size:12px;margin-bottom:6px"></div>
+    <div class="row" style="justify-content:flex-end;gap:8px">
+      <button class="btn btn-o" onclick="closeM()">キャンセル</button>
+      <button class="btn btn-g" onclick="savePw()">変更</button>
     </div>
   </div>
 
@@ -590,6 +640,7 @@ function initData(){
   sv('accounts',[
     {id:'dev',username:'developer',password:'dev2024',role:'dev',display:'製作者'},
     {id:'adm1',username:'admin',password:'admin123',role:'admin',display:'管理者'},
+    {id:'stf1',username:'staff1',password:'staff1',role:'staff',display:'内勤1'},
   ]);
   sv('therapists',[
     {id:1,name:'田中 彩',rank:'ノーマル',face:'かわいい',body:'スレンダー',kan:'◎',caution:'',interval:20,nomFee:1000,memo:''},
@@ -679,10 +730,21 @@ function doLogout(){
 function applyRole(){
   const r=CUR.role;
   const rb=document.getElementById('roleBadge');
-  rb.className='role-badge '+(r==='dev'?'rb-dev':'rb-admin');
-  rb.textContent=r==='dev'?'製作者':'管理者';
+  rb.className='role-badge '+(r==='dev'?'rb-dev':r==='admin'?'rb-admin':'rb-staff');
+  rb.textContent=r==='dev'?'製作者':r==='admin'?'管理者':'内勤';
   document.getElementById('userLabel').textContent=CUR.display;
+
+  // 内勤は非表示にするタブ
+  const staffHide=['nav-menu','nav-sales','nav-store','nav-accounts'];
+  staffHide.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('hidden', r==='staff');
+  });
 }
+
+const isStaff=()=>CUR&&CUR.role==='staff';
+const isAdmin=()=>CUR&&(CUR.role==='admin'||CUR.role==='dev');
+const isDev=()=>CUR&&CUR.role==='dev';
 
 // ── RENDER ──
 function renderAll(){
@@ -1222,6 +1284,12 @@ function openM(name){
   document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
   document.getElementById('m-'+name).classList.remove('hidden');
   if(name==='att')openAtt();
+  if(name==='newAcc'){
+    document.getElementById('accModalTitle').textContent='アカウント追加';
+    document.getElementById('acc-id').value='';
+    ['acc-display','acc-username','acc-pass'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('acc-role').value='staff';
+  }
   if(name==='sold'){}
   if(name==='newArea'){
     document.getElementById('areaModalTitle').textContent='エリア追加';
@@ -1630,6 +1698,11 @@ function saveBk(){
   const total = calcBkTotal()||0;
   const rawId = document.getElementById('bk-id').value;
   const bkDate = document.getElementById('bk-date').value||getToday();
+
+  // 内勤ロールは当日以外の予約追加・編集不可
+  if(isStaff()&&bkDate!==getToday()){
+    alert('内勤スタッフは当日の予約のみ操作できます');return;
+  }
 
   // ── 重複チェック ──
   const therapist = ld('therapists',[]).find(t=>t.id===therapistId);
@@ -2204,6 +2277,128 @@ function deleteArea(idx){
   renderAreaList();
 }
 
+// ── ACCOUNTS ──
+function renderAccounts(){
+  const accs = ld('accounts',[]);
+  const rl={dev:'製作者',admin:'管理者',staff:'内勤'};
+  const rc={dev:'rb-dev',admin:'rb-admin',staff:'rb-staff'};
+  // 製作者は製作者のみ見える
+  const visible = isDev() ? accs : accs.filter(a=>a.role!=='dev');
+  document.getElementById('accList').innerHTML = visible.map(a=>`
+    <div class="mgr-item">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px">
+          ${a.display}
+          <span class="role-badge ${rc[a.role]||''}" style="font-size:10px;padding:1px 8px">${rl[a.role]||a.role}</span>
+        </div>
+        <div style="font-size:12px;color:var(--tm);margin-top:2px">@${a.username}</div>
+      </div>
+      <div class="row" style="gap:6px">
+        ${canChgPw(a)?`<button class="btn btn-o btn-sm" onclick="openChgPw('${a.id}')">PW変更</button>`:''}
+        ${canDelAcc(a)?`<button class="btn btn-d btn-sm" onclick="delAcc('${a.id}')">削除</button>`:''}
+        ${canEditAcc(a)?`<button class="btn btn-o btn-sm" onclick="openEditAcc('${a.id}')">編集</button>`:''}
+      </div>
+    </div>`).join('')||'<div style="color:var(--tm);font-size:13px">アカウントなし</div>';
+}
+
+function canChgPw(a){
+  if(!CUR)return false;
+  if(a.role==='dev') return isDev()&&CUR.id===a.id; // 製作者PW変更は自分のみ
+  return isAdmin()||CUR.id===a.id;
+}
+function canDelAcc(a){
+  if(!CUR)return false;
+  if(a.id===CUR.id||a.role==='dev')return false; // 自分・製作者は削除不可
+  if(isDev())return true;
+  return isAdmin()&&a.role!=='dev';
+}
+function canEditAcc(a){
+  if(!CUR)return false;
+  if(a.role==='dev')return false;
+  return isAdmin();
+}
+
+function openEditAcc(id){
+  const a=ld('accounts',[]).find(x=>x.id===id);if(!a)return;
+  document.getElementById('accModalTitle').textContent='アカウント編集';
+  document.getElementById('acc-id').value=id;
+  document.getElementById('acc-display').value=a.display||'';
+  document.getElementById('acc-username').value=a.username||'';
+  document.getElementById('acc-pass').value='';
+  document.getElementById('acc-role').value=a.role||'staff';
+  // 製作者は製作者ロールも選択可
+  const roleEl=document.getElementById('acc-role');
+  if(isDev()){
+    roleEl.innerHTML='<option value="admin">管理者</option><option value="staff">内勤</option>';
+  } else {
+    roleEl.innerHTML='<option value="admin">管理者</option><option value="staff">内勤</option>';
+  }
+  roleEl.value=a.role;
+  openM('newAcc');
+}
+
+function saveAcc(){
+  const rawId=document.getElementById('acc-id').value;
+  const display=document.getElementById('acc-display').value.trim();
+  const username=document.getElementById('acc-username').value.trim();
+  const pass=document.getElementById('acc-pass').value;
+  const role=document.getElementById('acc-role').value;
+  if(!display||!username){alert('表示名とユーザー名を入力してください');return;}
+  const accs=ld('accounts',[]);
+  if(!rawId){
+    // 新規追加
+    if(!pass){alert('パスワードを入力してください');return;}
+    if(accs.find(a=>a.username===username)){alert('このユーザー名は既に使用されています');return;}
+    accs.push({id:'u'+Date.now(),username,password:pass,role,display});
+  } else {
+    // 編集
+    const idx=accs.findIndex(x=>x.id===rawId);
+    if(idx<0)return;
+    accs[idx]={...accs[idx],display,username,role};
+    if(pass) accs[idx].password=pass;
+  }
+  sv('accounts',accs);
+  closeM();
+  renderAccounts();
+}
+
+function delAcc(id){
+  if(!confirm('削除しますか？'))return;
+  sv('accounts',ld('accounts',[]).filter(a=>a.id!==id));
+  renderAccounts();
+}
+
+function openChgPw(uid){
+  const a=ld('accounts',[]).find(x=>x.id===uid);if(!a)return;
+  document.getElementById('pw-uid').value=uid;
+  ['pw-curr','pw-new','pw-new2'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('pw-err').textContent='';
+  // 本人変更か製作者同士以外は現在PW不要
+  const needCurr=CUR.id===uid;
+  document.getElementById('pw-curr-wrap').style.display=needCurr?'':'none';
+  openM('chgPw');
+}
+
+function savePw(){
+  const uid=document.getElementById('pw-uid').value;
+  const curr=document.getElementById('pw-curr').value;
+  const nw=document.getElementById('pw-new').value;
+  const nw2=document.getElementById('pw-new2').value;
+  const errEl=document.getElementById('pw-err');
+  if(nw!==nw2){errEl.textContent='新しいパスワードが一致しません';return;}
+  if(!nw){errEl.textContent='パスワードを入力してください';return;}
+  const accs=ld('accounts',[]);
+  const a=accs.find(x=>x.id===uid);if(!a)return;
+  if(document.getElementById('pw-curr-wrap').style.display!=='none'&&a.password!==curr){
+    errEl.textContent='現在のパスワードが違います';return;
+  }
+  a.password=nw;
+  sv('accounts',accs);
+  if(CUR.id===uid)CUR.password=nw;
+  closeM();
+  alert('パスワードを変更しました');
+}
+
 function showPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>{p.classList.add('hidden');p.classList.remove('active')});
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
@@ -2214,6 +2409,7 @@ function showPage(name,btn){
   if(name==='menuMgr')renderMenuMgr();
   if(name==='sales')renderSales();
   if(name==='storeSetting'){renderAreaList();loadSnsFormat();}
+  if(name==='accounts')renderAccounts();
 }
 initData();
 </script>
