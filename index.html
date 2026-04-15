@@ -272,7 +272,10 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
           </tbody>
         </table>
         <div class="sp-sns-wrap">
-          <div class="sp-sns-lbl">SNS用テキスト</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+            <div class="sp-sns-lbl" style="margin-bottom:0">SNS用テキスト</div>
+            <button onclick="openSoldModal()" style="background:none;border:1px solid var(--bdr);color:var(--ts);padding:3px 10px;border-radius:var(--r);font-size:11px;cursor:pointer">完売設定</button>
+          </div>
           <div class="sp-sns" id="spSns">—</div>
           <button class="sp-copy" onclick="spCopy()">コピー</button>
         </div>
@@ -438,6 +441,8 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
           <textarea class="inp" id="sns-header" rows="3" placeholder="例: 本日の空き情報🌸" style="resize:none"></textarea>
           <label class="lbl">フッター</label>
           <textarea class="inp" id="sns-footer" rows="3" placeholder="例: ご予約はDMまで💌" style="resize:none"></textarea>
+          <label class="lbl">完売マーク（セラピスト名の後に表示）</label>
+          <input class="inp" id="sns-sold" placeholder="例: 　完🎉">
           <button class="btn btn-g btn-sm" style="width:100%;margin-top:4px" onclick="saveSnsFormat()">保存</button>
           <div id="sns-save-msg" style="font-size:12px;color:var(--gold);text-align:center;margin-top:6px;min-height:16px"></div>
         </div>
@@ -483,6 +488,16 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
     <div class="row" style="justify-content:flex-end;gap:8px">
       <button class="btn btn-o" onclick="closeM()">キャンセル</button>
       <button class="btn btn-g" onclick="saveAtt()">登録</button>
+    </div>
+  </div>
+
+  <!-- 完売設定 -->
+  <div class="modal hidden" id="m-sold">
+    <div class="mt">完売設定</div>
+    <div style="font-size:12px;color:var(--ts);margin-bottom:10px">タップで完売/受付中を切り替え</div>
+    <div id="soldList"></div>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px">
+      <button class="btn btn-o" onclick="closeM()">閉じる</button>
     </div>
   </div>
 
@@ -744,6 +759,61 @@ function spResetFilter(){
   spCalc();
 }
 
+// ── SOLD OUT ──
+// {therapistId: true} の形で当日完売セラピストを管理
+let soldOut = {};
+let soldOutDate = '';
+
+function checkSoldOutReset(){
+  const today = getToday();
+  if(soldOutDate && soldOutDate !== today){
+    soldOut={};soldOutDate='';
+  }
+}
+
+function openSoldModal(){
+  checkSoldOutReset();
+  const today = getToday();
+  soldOutDate = today;
+  const att = ld('attendance',[]);
+  const therapists = ld('therapists',[]);
+  // 出勤中のセラピストのみ表示
+  const present = therapists.filter(t=>att.find(a=>a.therapistId===t.id));
+  const fmt = ld('snsFormat',{sold:'　完🎉'});
+  const soldMark = fmt.sold||'　完🎉';
+
+  document.getElementById('soldList').innerHTML = present.length
+    ? present.map(t=>{
+        const isSold = soldOut[t.id]||false;
+        return `<div onclick="toggleThSold(${t.id},this)"
+          style="display:flex;align-items:center;justify-content:space-between;
+          background:${isSold?'#2A1010':'var(--dark3)'};
+          border:1px solid ${isSold?'#C85A5A':'var(--bdr)'};
+          border-radius:var(--r);padding:10px 13px;margin-bottom:7px;cursor:pointer;transition:all .15s">
+          <span style="font-size:14px;font-weight:500;color:${isSold?'#C85A5A':'var(--tp)'}">${t.name}</span>
+          <span style="font-size:13px;color:${isSold?'#C85A5A':'var(--tm)'}">
+            ${isSold?soldMark:'受付中'}
+          </span>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--tm);font-size:13px;text-align:center;padding:10px 0">出勤登録がありません</div>';
+
+  openM('sold');
+}
+
+function toggleThSold(id, el){
+  soldOut[id] = !soldOut[id];
+  const fmt = ld('snsFormat',{sold:'　完🎉'});
+  const soldMark = fmt.sold||'　完🎉';
+  const isSold = soldOut[id];
+  el.style.background = isSold?'#2A1010':'var(--dark3)';
+  el.style.borderColor = isSold?'#C85A5A':'var(--bdr)';
+  el.querySelector('span:first-child').style.color = isSold?'#C85A5A':'var(--tp)';
+  el.querySelector('span:last-child').textContent = isSold?soldMark:'受付中';
+  el.querySelector('span:last-child').style.color = isSold?'#C85A5A':'var(--tm)';
+  spCalc();
+}
+
 function buildAreaFilterBtns(){
   const areas=ld('areas',[]);
   const wrap=document.getElementById('spf-area');
@@ -912,15 +982,26 @@ function spCalc(){
     </tr>`;
   }).join('');
 
-  // SNSテキスト（ヘッダー・フッター付き）
-  const fmt = ld('snsFormat',{header:'',footer:''});
-  const lines=cands.filter(c=>c.mx>0).map(c=>{
-    return `${padName(sanName(c.name),6)}${minsToDisplay(c.start)}～`;
+  // SNSテキスト（ヘッダー・フッター・完売対応）
+  checkSoldOutReset();
+  const fmt = ld('snsFormat',{header:'',footer:'',sold:'　完🎉'});
+  const soldMark = fmt.sold||'　完🎉';
+
+  // 受付可能（完売でない）
+  const activeLines = cands.filter(c=>c.mx>0&&!soldOut[c.id]).map(c=>{
+    return padName(sanName(c.name),6)+minsToDisplay(c.start)+'～';
   });
+  // 完売セラピスト（出勤中で完売設定あり）
+  const att = ld('attendance',[]);
+  const therapists = ld('therapists',[]);
+  const soldLines = therapists
+    .filter(t=>soldOut[t.id]&&att.find(a=>a.therapistId===t.id))
+    .map(t=>padName(sanName(t.name),6)+soldMark);
+
+  const allLines = [...activeLines, ...soldLines];
   const parts=[];
   if(fmt.header) parts.push(fmt.header);
-  if(lines.length) parts.push(lines.join('\n'));
-  else parts.push('（受付可能なセラピストがいません）');
+  parts.push(allLines.length?allLines.join('\n'):'（受付可能なセラピストがいません）');
   if(fmt.footer) parts.push(fmt.footer);
   document.getElementById('spSns').textContent=parts.join('\n\n');
 }
@@ -1138,6 +1219,7 @@ function openM(name){
   document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
   document.getElementById('m-'+name).classList.remove('hidden');
   if(name==='att')openAtt();
+  if(name==='sold'){}
   if(name==='newArea'){
     document.getElementById('areaModalTitle').textContent='エリア追加';
     document.getElementById('area-id').value='';
@@ -2055,20 +2137,23 @@ function toggleAccord(id){
 
 // ── SNS FORMAT ──
 function loadSnsFormat(){
-  const fmt = ld('snsFormat',{header:'',footer:''});
+  const fmt = ld('snsFormat',{header:'',footer:'',sold:''});
   const h = document.getElementById('sns-header');
   const f = document.getElementById('sns-footer');
+  const s = document.getElementById('sns-sold');
   if(h) h.value = fmt.header||'';
   if(f) f.value = fmt.footer||'';
+  if(s) s.value = fmt.sold||'';
 }
 
 function saveSnsFormat(){
   const header = document.getElementById('sns-header')?.value||'';
   const footer = document.getElementById('sns-footer')?.value||'';
-  sv('snsFormat',{header,footer});
+  const sold = document.getElementById('sns-sold')?.value||'';
+  sv('snsFormat',{header,footer,sold});
   const msg = document.getElementById('sns-save-msg');
   if(msg){msg.textContent='保存しました';setTimeout(()=>msg.textContent='',2000);}
-  spCalc(); // SNSテキスト再生成
+  spCalc();
 }
 
 // ── AREA MANAGEMENT ──
