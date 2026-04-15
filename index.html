@@ -815,6 +815,10 @@ async function loadAllFromSupabase(){
     const snsSold   = settings.find(s=>s.key==='sns_sold')?.value||'　完🎉';
     sv('snsFormat',{header:snsHeader, footer:snsFooter, sold:snsSold});
 
+    // アカウント
+    const accs = await sbGet('accounts','order=id.asc');
+    sv('accounts', accs.map(a=>({id:a.id,username:a.username,password:a.password,role:a.role,display:a.display})));
+
     // 今日の出勤・予約
     const today = getToday();
     const [atts, bks] = await Promise.all([
@@ -823,8 +827,7 @@ async function loadAllFromSupabase(){
     ]);
     sv('attendance', atts.map(mapAtt));
     sv('bookings', bks.map(mapBk));
-    console.log('[Supabase] bookings取得:', bks.length, '件');
-    console.log('[Supabase] loadAllFromSupabase 完了');
+    console.log('[Supabase] 全データ読み込み完了');
   }catch(e){
     console.error('Supabase load error:', e);
   }
@@ -2384,10 +2387,8 @@ async function deleteArea(idx){
   renderAreaList();
 }
 
-async function renderAccounts(){
-  console.log('[Supabase] renderAccounts 開始');
-  const accs = await sbGet('accounts','order=id.asc');
-  console.log('[Supabase] accounts取得:', accs?.length, '件', accs);
+function renderAccounts(){
+  const accs = ld('accounts',[]);
   const rl={dev:'製作者',admin:'管理者',staff:'内勤'};
   const rc={dev:'rb-dev',admin:'rb-admin',staff:'rb-staff'};
   const visible = isDev() ? accs : accs.filter(a=>a.role!=='dev');
@@ -2426,8 +2427,7 @@ function canEditAcc(a){
 }
 
 async function openEditAcc(id){
-  const accs=await sbGet('accounts',`id=eq.${id}`);
-  const a=accs[0];if(!a)return;
+  const a=ld('accounts',[]).find(x=>x.id===id);if(!a)return;
   document.getElementById('accModalTitle').textContent='アカウント編集';
   document.getElementById('acc-id').value=id;
   document.getElementById('acc-display').value=a.display||'';
@@ -2437,19 +2437,78 @@ async function openEditAcc(id){
   openM('newAcc');
 }
 
+async function saveAcc(){
+  const rawId=document.getElementById('acc-id').value;
+  const display=document.getElementById('acc-display').value.trim();
+  const username=document.getElementById('acc-username').value.trim();
+  const pass=document.getElementById('acc-pass').value;
+  const role=document.getElementById('acc-role').value;
+  if(!display||!username){alert('表示名とユーザー名を入力してください');return;}
+  const accs=ld('accounts',[]);
+  if(!rawId){
+    if(!pass){alert('パスワードを入力してください');return;}
+    if(accs.find(a=>a.username===username)){alert('このユーザー名は既に使用されています');return;}
+    await sbPost('accounts',{id:'u'+Date.now(),username,password:pass,role,display});
+  } else {
+    const data={display,username,role};
+    if(pass) data.password=pass;
+    await sbPatch('accounts',rawId,data);
+  }
+  const updAccs=await sbGet('accounts','order=id.asc');
+  sv('accounts',updAccs.map(a=>({id:a.id,username:a.username,password:a.password,role:a.role,display:a.display})));
+  closeM();
+  renderAccounts();
+}
+
+async function delAcc(id){
+  if(!confirm('削除しますか？'))return;
+  await sbDelete('accounts',id);
+  const updAccs=await sbGet('accounts','order=id.asc');
+  sv('accounts',updAccs.map(a=>({id:a.id,username:a.username,password:a.password,role:a.role,display:a.display})));
+  renderAccounts();
+}
+
+function openChgPw(uid){
+  const a=ld('accounts',[]).find(x=>x.id===uid);if(!a)return;
+  document.getElementById('pw-uid').value=uid;
+  ['pw-curr','pw-new','pw-new2'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('pw-err').textContent='';
+  const needCurr=CUR.id===uid;
+  document.getElementById('pw-curr-wrap').style.display=needCurr?'':'none';
+  openM('chgPw');
+}
+
+async function savePw(){
+  const uid=document.getElementById('pw-uid').value;
+  const curr=document.getElementById('pw-curr').value;
+  const nw=document.getElementById('pw-new').value;
+  const nw2=document.getElementById('pw-new2').value;
+  const errEl=document.getElementById('pw-err');
+  if(nw!==nw2){errEl.textContent='新しいパスワードが一致しません';return;}
+  if(!nw){errEl.textContent='パスワードを入力してください';return;}
+  if(document.getElementById('pw-curr-wrap').style.display!=='none'){
+    const a=ld('accounts',[]).find(x=>x.id===uid);
+    if(!a||a.password!==curr){errEl.textContent='現在のパスワードが違います';return;}
+  }
+  await sbPatch('accounts',uid,{password:nw});
+  const updAccs=await sbGet('accounts','order=id.asc');
+  sv('accounts',updAccs.map(a=>({id:a.id,username:a.username,password:a.password,role:a.role,display:a.display})));
+  closeM();
+  alert('パスワードを変更しました');
+}
+
 // ページ表示制御
-async function showPage(name,btn){
+function showPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
   document.getElementById('page-'+name)?.classList.remove('hidden');
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
-  // タブ切り替え時にSupabaseから最新データ取得
-  await syncFromSupabase(name);
+  // タブ切り替えはlocalStorageから即表示（高速）
   if(name==='booking')renderBookingPage();
   if(name==='menuMgr')renderMenuMgr();
   if(name==='sales')renderSales();
   if(name==='storeSetting'){renderAreaList();loadSnsFormat();}
-  if(name==='accounts'){await renderAccounts();}
+  if(name==='accounts'){renderAccounts();}
 }
 
 // タブ別同期（必要なデータのみ取得）
@@ -2529,7 +2588,7 @@ function startPolling(){
     if(name==='dash'){renderDash();spCalc();}
     else if(name==='booking')renderBookingPage();
     else if(name==='therapist')renderTherapists();
-  }, 60000); // 1分
+  }, 30000); // 30秒
 }
 function stopPolling(){
   if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}
