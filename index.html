@@ -206,6 +206,50 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
           <button class="sp-btn" onclick="spNow()">現在時刻</button>
           <button class="sp-btn-gold" onclick="spCalc()">再計算</button>
         </div>
+
+        <!-- 追加条件 -->
+        <div style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:11px;font-weight:500;color:var(--ts);letter-spacing:.4px">追加条件</span>
+            <button onclick="spResetFilter()" style="background:none;border:none;color:var(--tm);font-size:11px;cursor:pointer;padding:0">リセット</button>
+          </div>
+          <!-- エリア -->
+          <div style="margin-bottom:5px">
+            <div style="font-size:10px;color:var(--tm);margin-bottom:3px">エリア</div>
+            <div class="seg-wrap seg-sm" id="spf-area" style="margin-bottom:0;gap:5px"></div>
+          </div>
+          <!-- 顔タイプ -->
+          <div style="margin-bottom:5px">
+            <div style="font-size:10px;color:var(--tm);margin-bottom:3px">顔タイプ</div>
+            <div class="seg-wrap seg-sm" id="spf-face" style="margin-bottom:0;gap:5px">
+              <button class="seg-btn" data-val="かわいい" onclick="spToggleFilter('face','かわいい',this)">かわいい</button>
+              <button class="seg-btn" data-val="きれい" onclick="spToggleFilter('face','きれい',this)">きれい</button>
+              <button class="seg-btn" data-val="ギャル" onclick="spToggleFilter('face','ギャル',this)">ギャル</button>
+              <button class="seg-btn" data-val="清楚" onclick="spToggleFilter('face','清楚',this)">清楚</button>
+            </div>
+          </div>
+          <!-- スタイル -->
+          <div style="margin-bottom:5px">
+            <div style="font-size:10px;color:var(--tm);margin-bottom:3px">スタイル</div>
+            <div class="seg-wrap seg-sm" id="spf-body" style="margin-bottom:0;gap:5px">
+              <button class="seg-btn" data-val="ぽっちゃり" onclick="spToggleFilter('body','ぽっちゃり',this)">ぽっちゃり</button>
+              <button class="seg-btn" data-val="普通" onclick="spToggleFilter('body','普通',this)">普通</button>
+              <button class="seg-btn" data-val="スレンダー" onclick="spToggleFilter('body','スレンダー',this)">スレンダー</button>
+            </div>
+          </div>
+          <!-- 寛容度 -->
+          <div>
+            <div style="font-size:10px;color:var(--tm);margin-bottom:3px">寛容度</div>
+            <div class="seg-wrap seg-sm" id="spf-kan" style="margin-bottom:0;gap:5px">
+              <button class="seg-btn" data-val="◎" onclick="spToggleFilter('kan','◎',this)">◎</button>
+              <button class="seg-btn" data-val="〇" onclick="spToggleFilter('kan','〇',this)">〇</button>
+              <button class="seg-btn" data-val="ー" onclick="spToggleFilter('kan','ー',this)">ー</button>
+              <button class="seg-btn" data-val="▲" onclick="spToggleFilter('kan','▲',this)">▲</button>
+              <button class="seg-btn" data-val="×" onclick="spToggleFilter('kan','×',this)">×</button>
+            </div>
+          </div>
+        </div>
+
         <table class="sp-tbl">
           <thead>
             <tr><th>セラピスト</th><th>最短開始</th><th>最大コース</th></tr>
@@ -593,6 +637,7 @@ function renderAll(){
 }
 
 function renderDash(){
+  buildAreaFilterBtns();
   const d=new Date();
   document.getElementById('dashDate').textContent=
     `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`;
@@ -619,6 +664,42 @@ function tsToMins(ts){
   return parseInt(parts[0])*60+parseInt(parts[1]);
 }
 
+// ── SHORTEST FILTER ──
+const spFilter = {area:null, face:null, body:null, kan:null};
+
+function spToggleFilter(key, val, el){
+  if(spFilter[key]===val){
+    // 同じ値をタップ → 解除
+    spFilter[key]=null;
+    el.classList.remove('active');
+  } else {
+    // 別の値 → 同グループの全ボタンのactiveを外して自分だけON
+    const wrap=document.getElementById('spf-'+key);
+    if(wrap) wrap.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
+    spFilter[key]=val;
+    el.classList.add('active');
+  }
+  spCalc();
+}
+
+function spResetFilter(){
+  ['area','face','body','kan'].forEach(k=>{
+    spFilter[k]=null;
+    const wrap=document.getElementById('spf-'+k);
+    if(wrap) wrap.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
+  });
+  spCalc();
+}
+
+function buildAreaFilterBtns(){
+  const areas=ld('areas',[]);
+  const wrap=document.getElementById('spf-area');
+  if(!wrap)return;
+  wrap.innerHTML=areas.map(a=>
+    `<button class="seg-btn" data-val="${a.id}" onclick="spToggleFilter('area',${a.id},this)">${a.name}</button>`
+  ).join('');
+}
+
 function spNow(){
   const mins=nowBusinessMins();
   document.getElementById('spTime').value=minsToDisplay(mins);
@@ -642,6 +723,12 @@ function computeShortest(baseMins){
   for(const t of therapists){
     const att=attendance.find(a=>a.therapistId===t.id);
     if(!att)continue;
+
+    // 追加条件フィルター（AND）
+    if(spFilter.area!==null && att.areaId!==spFilter.area)continue;
+    if(spFilter.face!==null && t.face!==spFilter.face)continue;
+    if(spFilter.body!==null && t.body!==spFilter.body)continue;
+    if(spFilter.kan!==null && t.kan!==spFilter.kan)continue;
 
     const interval=t.interval||20;
     let bStart=tsToMins(att.start);
