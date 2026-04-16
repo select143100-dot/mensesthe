@@ -160,13 +160,80 @@ select.bk-inp option{background:var(--dark3);color:var(--tp)}
 .seg-btn.active{background:var(--gold);color:#1A1A1A;border-color:var(--gold)}
 .seg-btn:hover:not(.active){border-color:var(--ts);color:var(--tp)}
 .seg-sm .seg-btn{padding:6px 4px;font-size:12px}
+
+/* SETUP WIZARD */
+.setup-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;min-height:100vh}
+.setup-box{background:var(--dark2);border:1px solid var(--gold-d);border-radius:12px;padding:32px 28px;width:100%;max-width:400px}
+.setup-logo{text-align:center;font-size:22px;font-weight:600;color:var(--gold);letter-spacing:3px;margin-bottom:4px}
+.setup-sub{text-align:center;font-size:12px;color:var(--tm);margin-bottom:22px}
+.setup-step{display:none}.setup-step.active{display:block}
+.setup-step-title{font-size:14px;font-weight:600;color:var(--gold);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--bdr)}
+.setup-note{font-size:12px;color:var(--tm);margin-bottom:14px;line-height:1.7;background:var(--dark3);border-radius:var(--r);padding:10px 12px}
+.setup-err{color:#c06060;font-size:12px;margin-top:8px;min-height:16px}
+.setup-progress{display:flex;gap:6px;justify-content:center;margin-bottom:20px}
+.setup-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr);transition:background .2s}
+.setup-dot.done{background:var(--gold-d)}
+.setup-dot.active{background:var(--gold)}
 </style>
 </head>
 <body>
 <div class="app">
 
+<!-- SETUP WIZARD -->
+<div id="screen-setup" class="setup-wrap hidden">
+  <div class="setup-box">
+    <div class="setup-logo">LUXE ESTHE</div>
+    <div class="setup-sub">初回セットアップ</div>
+    <div class="setup-progress">
+      <div class="setup-dot active" id="sdot-0"></div>
+      <div class="setup-dot" id="sdot-1"></div>
+      <div class="setup-dot" id="sdot-2"></div>
+    </div>
+
+    <!-- STEP 0: ようこそ -->
+    <div class="setup-step active" id="setup-step-0">
+      <div class="setup-step-title">ようこそ</div>
+      <div class="setup-note">
+        初めてご利用いただきありがとうございます。<br>
+        このウィザードでは管理システムの初期設定を行います。<br><br>
+        まず、システムの最高権限アカウント（製作者）を作成してください。
+      </div>
+      <button class="btn btn-g btn-w" onclick="setupNext(1)">はじめる →</button>
+    </div>
+
+    <!-- STEP 1: 製作者アカウント作成 -->
+    <div class="setup-step" id="setup-step-1">
+      <div class="setup-step-title">製作者アカウントの作成</div>
+      <label class="lbl">表示名</label>
+      <input class="inp" id="sw-display" placeholder="例: 管理人" autocomplete="off">
+      <label class="lbl">ユーザー名（ログインID）</label>
+      <input class="inp" id="sw-username" placeholder="例: admin_dev" autocomplete="off">
+      <label class="lbl">パスワード</label>
+      <input class="inp" type="password" id="sw-pass" placeholder="8文字以上推奨" autocomplete="new-password">
+      <label class="lbl">パスワード（確認）</label>
+      <input class="inp" type="password" id="sw-pass2" placeholder="もう一度入力" autocomplete="new-password">
+      <div class="setup-err" id="sw-err"></div>
+      <div class="row" style="gap:8px;margin-top:10px">
+        <button class="btn btn-o" style="flex:1" onclick="setupNext(0)">← 戻る</button>
+        <button class="btn btn-g" style="flex:2" onclick="setupStep1Next()">次へ →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: 完了 -->
+    <div class="setup-step" id="setup-step-2">
+      <div class="setup-step-title">セットアップ完了</div>
+      <div class="setup-note">
+        製作者アカウントが作成されました。<br><br>
+        引き続き、店舗設定でエリア登録・SNSフォーマット設定、セラピスト管理でスタッフの登録を行ってください。<br><br>
+        メニュー（コース・延長・割引）はデフォルト値が設定済みです。メニュー管理画面から変更できます。
+      </div>
+      <button class="btn btn-g btn-w" onclick="setupFinish()">ログイン画面へ</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOGIN -->
-<div id="screen-login" class="login-wrap">
+<div id="screen-login" class="login-wrap hidden">
   <div class="login-box">
     <div class="login-logo">LUXE ESTHE</div>
     <div class="login-sub">管理システム</div>
@@ -636,22 +703,56 @@ let CUR=null;
 
 // ── INIT ──
 function initData(){
-  if(ld('init',false))return;
-  sv('accounts',[
-    {id:'dev',username:'developer',password:'dev2024',role:'dev',display:'製作者'},
-    {id:'adm1',username:'admin',password:'admin123',role:'admin',display:'管理者'},
-    {id:'stf1',username:'staff1',password:'staff1',role:'staff',display:'内勤1'},
-  ]);
-  sv('therapists',[
-    {id:1,name:'田中 彩',rank:'ノーマル',face:'かわいい',body:'スレンダー',kan:'◎',caution:'',interval:20,nomFee:1000,memo:''},
-    {id:2,name:'田村 麻衣',rank:'ノーマル',face:'清楚',body:'普通',kan:'〇',caution:'',interval:20,nomFee:1000,memo:''},
-    {id:3,name:'中村 葵',rank:'ゴールド',face:'きれい',body:'スレンダー',kan:'◎',caution:'',interval:20,nomFee:2000,memo:'人気No.1'},
-  ]);
-  sv('attendance',[
-    {therapistId:1,start:'10:00',end:'22:00'},
-    {therapistId:2,start:'12:00',end:'22:00'},
-    {therapistId:3,start:'10:00',end:'23:00'},
-  ]);
+  // 未初期化ならセットアップウィザードを表示
+  if(!ld('init',false)){
+    document.getElementById('screen-setup').classList.remove('hidden');
+    return;
+  }
+  if(!ld('bookings',null)) sv('bookings',[]);
+  if(!ld('therapists',null)) sv('therapists',[]);
+  if(!ld('attendance',null)) sv('attendance',[]);
+  if(!ld('areas',null)) sv('areas',[]);
+  if(!ld('nid',null)) sv('nid',{th:10,bk:100,area:10});
+  // 初期化済みの場合はログイン画面を表示
+  document.getElementById('screen-login').classList.remove('hidden');
+}
+
+// ── SETUP WIZARD ──
+let _setupStep = 0;
+
+function setupNext(step){
+  document.getElementById('setup-step-'+_setupStep).classList.remove('active');
+  document.getElementById('sdot-'+_setupStep).classList.remove('active');
+  document.getElementById('sdot-'+_setupStep).classList.add('done');
+  _setupStep = step;
+  document.getElementById('setup-step-'+step).classList.add('active');
+  document.getElementById('sdot-'+step).classList.remove('done');
+  document.getElementById('sdot-'+step).classList.add('active');
+  // 戻るとき前のdotをactiveに戻す
+  if(step < 2){
+    for(let i=step+1;i<=2;i++){
+      document.getElementById('sdot-'+i).classList.remove('done','active');
+    }
+  }
+}
+
+function setupStep1Next(){
+  const display = document.getElementById('sw-display').value.trim();
+  const username = document.getElementById('sw-username').value.trim();
+  const pass = document.getElementById('sw-pass').value;
+  const pass2 = document.getElementById('sw-pass2').value;
+  const errEl = document.getElementById('sw-err');
+  errEl.textContent = '';
+  if(!display || !username){ errEl.textContent = '表示名とユーザー名を入力してください'; return; }
+  if(!pass){ errEl.textContent = 'パスワードを入力してください'; return; }
+  if(pass !== pass2){ errEl.textContent = 'パスワードが一致しません'; return; }
+  // 製作者アカウントを保存
+  sv('accounts',[{id:'dev_'+Date.now(), username, password:pass, role:'dev', display}]);
+  setupNext(2);
+}
+
+function setupFinish(){
+  // メニューデフォルト値を投入
   sv('menuCourse',[
     {label:'60分', mins:60, price:15000},
     {label:'80分', mins:80, price:20000},
@@ -670,16 +771,8 @@ function initData(){
     {label:'180分', mins:180, price:45000},
     {label:'200分', mins:200, price:50000},
   ]);
-  sv('menuOp',[
-    {label:'有', price:5000},
-    {label:'無', price:0},
-  ]);
-  sv('menuNom',[
-    {label:'F', price:0},
-    {label:'写', price:0},
-    {label:'姫', price:0},
-    {label:'本', price:null}, // セラピスト紐づき
-  ]);
+  sv('menuOp',[{label:'有', price:5000},{label:'無', price:0}]);
+  sv('menuNom',[{label:'F',price:0},{label:'写',price:0},{label:'姫',price:0},{label:'本',price:null}]);
   sv('menuDisc',[
     {label:'1000円引', price:1000},
     {label:'2000円引', price:2000},
@@ -687,12 +780,14 @@ function initData(){
     {label:'5000円引', price:5000},
   ]);
   sv('bookings',[]);
-  sv('areas',[
-    {id:1, name:'柏'},
-    {id:2, name:'船橋'},
-  ]);
+  sv('therapists',[]);
+  sv('attendance',[]);
+  sv('areas',[]);
   sv('nid',{th:10,bk:100,area:10});
   sv('init',true);
+  // ウィザードを隠してログイン画面へ
+  document.getElementById('screen-setup').classList.add('hidden');
+  document.getElementById('screen-login').classList.remove('hidden');
 }
 
 function nid(t){const ids=ld('nid',{th:10,bk:100});const id=(ids[t]||10)+1;ids[t]=id;sv('nid',ids);return id;}
